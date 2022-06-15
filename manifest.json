@@ -1,0 +1,7 @@
+{
+  "name": "Reset Layer Name",
+  "id": "1118882302918088586",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "editorType": ["figma"]
+}
