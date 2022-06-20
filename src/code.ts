@@ -4,7 +4,12 @@ import { findIndex } from 'lodash'
 // figma.skipInvisibleInstanceChildren = true
 
 // 右パネルに起動ボタンを表示
-// figma.root.setRelaunchData({ open: '' })
+// 全ページの全レイヤーを選択した時に表示する
+figma.root.children.forEach(page => {
+  page.findAll().forEach(node => {
+    node.setRelaunchData({ exec: '' })
+  })
+})
 
 if (figma.currentPage.selection.length) {
   // 処理後に選択を更新するので、それ用の配列を用意
@@ -52,6 +57,12 @@ if (figma.currentPage.selection.length) {
 
       // newSelectionにnodeを追加
       newSelection.push(node)
+    }
+    // nodeがコンポーネントorVariantsの場合
+    else if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+      // 名前をデフォルトに戻されると困るので、処理中断
+      figma.notify('This element is component or variants.')
+      return
     }
     // nodeがそれ以外の場合
     else {

@@ -3,5 +3,12 @@
   "id": "1118882302918088586",
   "api": "1.0.0",
   "main": "dist/code.js",
-  "editorType": ["figma"]
+  "editorType": ["figma"],
+  "relaunchButtons": [
+    {
+      "command": "exec",
+      "name": "Reset Layer Name",
+      "multipleSelection": true
+    }
+  ]
 }
