@@ -3,14 +3,6 @@ import { findIndex } from 'lodash'
 // find系の高速化
 // figma.skipInvisibleInstanceChildren = true
 
-// 右パネルに起動ボタンを表示
-// 全ページの全レイヤーを選択した時に表示する
-figma.root.children.forEach(page => {
-  page.findAll().forEach(node => {
-    node.setRelaunchData({ exec: '' })
-  })
-})
-
 if (figma.currentPage.selection.length) {
   // 処理後に選択を更新するので、それ用の配列を用意
   const newSelection: SceneNode[] = []

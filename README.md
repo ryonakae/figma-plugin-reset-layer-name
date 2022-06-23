@@ -8,7 +8,7 @@ EVERY element! Text, frames, groups, rectangles, etc.
 ## 🔥 How to use
 
 1. Select one or more layers.
-2. Run this plugin. A button will appear in the right panel, and you can also click on it to run.
+2. Run this plugin.
 3. Enjoy🤟
 
 ## ✏️ Note
