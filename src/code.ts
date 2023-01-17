@@ -3,25 +3,39 @@ import { findIndex } from 'lodash'
 // find系の高速化
 // figma.skipInvisibleInstanceChildren = true
 
-if (figma.currentPage.selection.length) {
-  // 処理後に選択を更新するので、それ用の配列を用意
-  const newSelection: SceneNode[] = []
+// nodeの先祖が特定のタイプかどうかを返す再帰関数
+// page or documentまで遡り、先祖node or undefinedを返す
+function getAncestorNodeByType(
+  node: SceneNode,
+  type: SceneNode['type']
+): SceneNode | undefined {
+  if (!node.parent) {
+    return undefined
+  } else if (node.parent.type === type) {
+    return node.parent
+  } else if (node.parent.type === 'PAGE' || node.parent.type === 'DOCUMENT') {
+    return undefined
+  } else {
+    return getAncestorNodeByType(node.parent, type)
+  }
+}
 
+if (figma.currentPage.selection.length) {
   // 選択している要素ごとに処理を実行
   figma.currentPage.selection.forEach(node => {
     console.log(node)
 
-    // 親のnodeを取得
-    const parentNode = node.parent
-
-    // parentNodeが無い場合は処理中断
-    if (!parentNode) {
-      figma.notify('Parent element not found.')
-      return
+    // nodeの先祖がComponentの場合
+    if (getAncestorNodeByType(node, 'COMPONENT')) {
+      console.log(node.id, getAncestorNodeByType(node, 'COMPONENT')?.id)
     }
+    // nodeの先祖がインスタンスの場合
+    // 無理やり元の名前にリネームしているだけで、overrideをリセットしているわけではない
+    // (reset overrideできるAPIが現時点では無い)
+    else if (getAncestorNodeByType(node, 'INSTANCE')) {
+      // 親nodeを取得
+      const parentNode = node.parent as InstanceNode
 
-    // parentNodeがインスタンスの場合
-    if (parentNode.type === 'INSTANCE') {
       // インスタンスのmainComponentを取得
       const mainComponent = parentNode.mainComponent
 
@@ -38,19 +52,33 @@ if (figma.currentPage.selection.length) {
 
       // nodeの名前をmainComponentにある要素と同じ名前にする
       node.name = mainComponent.children[index].name
-
-      // newSelectionにnodeを追加
-      newSelection.push(node)
     }
-    // nodeがテキストの場合
-    else if (node.type === 'TEXT') {
-      // autoRenameをtrueにするだけで名前がリセットされる
-      node.autoRename = true
+    // nodeがインスタンスの場合
+    else if (node.type === 'INSTANCE') {
+      // インスタンスのmainComponentを取得
+      const mainComponent = node.mainComponent
 
-      // newSelectionにnodeを追加
-      newSelection.push(node)
+      // mainComponentが無い場合は処理中断
+      if (!mainComponent) {
+        figma.notify('Main component not found.')
+        return
+      }
+
+      // mainComponentの親を取得
+      const parentMainComponent = mainComponent.parent as SceneNode
+
+      // mainComponentの親がVariantsの場合
+      if (parentMainComponent.type === 'COMPONENT_SET') {
+        // nodeの名前をVariantsの名前にする
+        node.name = parentMainComponent.name
+      }
+      // それ以外の場合（普通のコンポーネントの場合）
+      else {
+        // nodeの名前をmainComponentの名前にする
+        node.name = mainComponent.name
+      }
     }
-    // nodeがコンポーネントorVariantsの場合
+    // nodeがコンポーネント or Variantsの場合
     else if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
       // 名前をデフォルトに戻されると困るので、処理中断
       figma.notify('This element is component or variants.')
@@ -58,60 +86,9 @@ if (figma.currentPage.selection.length) {
     }
     // nodeがそれ以外の場合
     else {
-      // nodeをcloneする
-      const clonedNode = node.clone()
-
-      // nodeがインスタンスの場合→mainComponentの名前にする
-      if (node.type === 'INSTANCE') {
-        // mainComponentを取得
-        const mainComponent = node.mainComponent
-
-        // mainComponentが無い場合は処理中断
-        if (!mainComponent) {
-          figma.notify('Main component not found.')
-          return
-        }
-
-        // mainComponentのさらに親を取得
-        const parentMainComponent = mainComponent.parent
-
-        // parentMainComponentがCOMPONENT_SET、つまりVariantsの場合
-        if (
-          parentMainComponent &&
-          parentMainComponent.type === 'COMPONENT_SET'
-        ) {
-          // clonedNodeの名前をparentMainComponentのものにする
-          clonedNode.name = parentMainComponent.name
-        }
-        // それ以外（ただのコンポーネント）の場合
-        else {
-          // clonedNodeの名前をmainComponentのものにする
-          clonedNode.name = mainComponent.name
-        }
-      }
-      // それ以外の場合
-      else {
-        // clonedNodeの名前を空にする→デフォルトの名前になる
-        clonedNode.name = ''
-      }
-
-      // nodeのインデックスを取得
-      const index = findIndex(parentNode.children, child => {
-        return child.id === node.id
-      })
-
-      // インデックスを元に、nodeの後にclonedNodeを移動
-      parentNode.insertChild(index + 1, clonedNode)
-
-      // newSelectionにclonedNodeを追加
-      newSelection.push(clonedNode)
-
-      // nodeを削除
-      node.remove()
+      // 名前を空にするとリセットされる
+      node.name = ''
     }
-
-    // 現在のselectionをnewSelectionsにする
-    figma.currentPage.selection = newSelection
 
     figma.notify('Reset selected layers name!')
   })
