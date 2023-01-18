@@ -3,7 +3,8 @@
 ![](./cover.png)
 
 Reset names of selected layers to default.  
-EVERY element! Text, frames, groups, rectangles, etc.
+You can reset names of EVERY element!  
+Text, frames, groups, rectangles, instance, etc.
 
 ## 🔥 How to use
 
@@ -11,9 +12,22 @@ EVERY element! Text, frames, groups, rectangles, etc.
 2. Run this plugin.
 3. Enjoy🤟
 
-## ✏️ Note
+## ✏️ Note: Behavior
 
-If you select component or variants, this plugin will not rename. Because we don't want the component renamed!
+This plugin behaves differently depending on the type of element selected.
+
+(Component or variants)  
+This plugin will not rename and keep the original name of the component or variants.
+
+(Instance)  
+This plugin renames the element to the name of the main component.
+
+(Child element of instance)  
+This plugin renames element to the name of the same child element of the main component.  
+Note: Due to limitations of the plugin API, it is not resetting the override. It just renames to the same name.
+
+(Other types of elements)  
+This plugin renames the element to empty. That is, it resets it.
 
 ## 📮 Support
 
