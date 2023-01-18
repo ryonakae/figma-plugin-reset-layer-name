@@ -81,8 +81,33 @@ if (figma.currentPage.selection.length) {
       else {
         console.log('no ancestorInstances')
 
-        // 名前を空にする（リセットされる）
-        node.name = ''
+        // nodeがインスタンスの場合
+        if (node.type === 'INSTANCE') {
+          // メインコンポーネントを取得
+          const mainComponent = node.mainComponent
+
+          // メインコンポーネントが無い場合は処理中断
+          if (!mainComponent) {
+            return figma.notify(errorMessage.common)
+          }
+
+          // メインコンポーネントの親がvariantsの場合→nodeをvariantsの名前にする
+          if (
+            mainComponent.parent &&
+            mainComponent.parent.type === 'COMPONENT_SET'
+          ) {
+            node.name = mainComponent.parent.name
+          }
+          // それ以外の場合→nodeをメインコンポーネントの名前にする
+          else {
+            node.name = mainComponent.name
+          }
+        }
+        // それ以外の場合
+        else {
+          // 名前を空にする（リセットされる）
+          node.name = ''
+        }
       }
     }
 
