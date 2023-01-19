@@ -110,9 +110,9 @@ if (figma.currentPage.selection.length) {
         }
       }
     }
-
-    figma.notify('Reset selected layers name!')
   })
+
+  figma.notify('Reset selected layers name!')
 } else {
   figma.notify('Please select at least one layer.')
 }
