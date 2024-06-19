@@ -1,5 +1,8 @@
 {
   "path-intellisense.mappings": {
     "@": "${workspaceFolder}/src"
-  }
+  },
+  "biome.enabled": false,
+  "eslint.enable": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
 }
