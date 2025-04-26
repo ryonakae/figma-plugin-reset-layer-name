@@ -3,6 +3,7 @@ import {
   getIndexStructureInInstance,
   getNodeInComponentByIndexStructure,
 } from '@/util'
+import { over } from 'lodash'
 
 // find系の高速化
 // figma.skipInvisibleInstanceChildren = true
@@ -16,6 +17,77 @@ const messages = {
     alreadyReset: 'Layer names have already been reset.',
   },
   success: 'Reset selected layers name!',
+}
+
+async function main2() {
+  await Promise.all(
+    figma.currentPage.selection.map(async node => {
+      console.log(node)
+
+      const ancestorInstances = getAncestorInstances(node)
+      console.log('ancestorInstances', ancestorInstances)
+
+      // 先祖インスタンスから、nodeと同じidのoverrideを取得
+      const nodeOverride = ancestorInstances[0].overrides.find(
+        override => override.id === node.id,
+      )
+      console.log('nodeOverride', nodeOverride)
+
+      // 取得したoverrideのoverridenFieldsから、name以外を取得
+      const overridenFieldsExcludeName = nodeOverride?.overriddenFields.filter(
+        field => field !== 'name',
+      )
+      console.log('overridenFieldsExcludeName', overridenFieldsExcludeName)
+
+      // overrideの値を格納するオブジェクトを作成
+      const overrideValues: { [field: string]: any } = {}
+
+      // 各overridenFieldsの値を取得
+      overridenFieldsExcludeName?.map(overridenFields => {
+        if (overridenFields === 'styledTextSegments') {
+          const styledTextSegments = (node as TextNode).getStyledTextSegments([
+            'fontSize',
+            'fontName',
+            'fontWeight',
+            'textDecoration',
+            'textDecorationStyle',
+            'textDecorationOffset',
+            'textDecorationThickness',
+            'textDecorationColor',
+            'textDecorationSkipInk',
+            'textCase',
+            'lineHeight',
+            'letterSpacing',
+            'fills',
+            'textStyleId',
+            'fillStyleId',
+            'listOptions',
+            'listSpacing',
+            'indentation',
+            'paragraphIndent',
+            'paragraphSpacing',
+            'hyperlink',
+            'openTypeFeatures',
+            'boundVariables',
+            'textStyleOverrides',
+          ])
+          console.log('styledTextSegments', styledTextSegments)
+          overrideValues[overridenFields] = styledTextSegments
+        } else {
+          const value = (node as any)[overridenFields]
+          console.log(overridenFields, value)
+          overrideValues[overridenFields] = value
+        }
+      })
+
+      console.log('overrideValues', overrideValues)
+
+      // 先祖インスタンスのoverrideを実行
+      // ancestorInstances[0].resetOverrides()
+
+      // TODO: 対象nodeだけではなく、先祖インスタンスのすべての子要素に対してoverrideの値を保存する必要がある
+    }),
+  )
 }
 
 // メイン関数
@@ -190,4 +262,5 @@ async function main() {
 }
 
 // メイン関数の実行
-main()
+// main()
+main2()

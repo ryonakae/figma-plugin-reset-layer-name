@@ -16,8 +16,8 @@ importers:
         specifier: 1.9.4
         version: 1.9.4
       '@figma/plugin-typings':
-        specifier: 1.40.0
-        version: 1.40.0
+        specifier: 1.110.0
+        version: 1.110.0
       '@types/lodash':
         specifier: 4.14.182
         version: 4.14.182
@@ -105,8 +105,8 @@ packages:
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
     engines: {node: '>=10.0.0'}
 
-  '@figma/plugin-typings@1.40.0':
-    resolution: {integrity: sha512-PA73qVIn6KFVpnJkt2xNbCpaxx04pXs9eu22JH2123O7Mu17ARLDlXE+tt1ikACfsS6aEGsStI3IFPks+yomVA==}
+  '@figma/plugin-typings@1.110.0':
+    resolution: {integrity: sha512-n1fZKjt2zApCVqxdJs+JCdpmLX2hDvhgoGbuXeAh7xt+IkSj21gB9vhV5KW+O5sDyPnt3H7doTDO47Oy9CRkQg==}
 
   '@jridgewell/gen-mapping@0.3.8':
     resolution: {integrity: sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA==}
@@ -892,7 +892,7 @@ snapshots:
 
   '@discoveryjs/json-ext@0.5.7': {}
 
-  '@figma/plugin-typings@1.40.0': {}
+  '@figma/plugin-typings@1.110.0': {}
 
   '@jridgewell/gen-mapping@0.3.8':
     dependencies:

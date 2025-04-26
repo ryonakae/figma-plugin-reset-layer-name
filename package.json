@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@figma/plugin-typings": "1.40.0",
+    "@figma/plugin-typings": "1.110.0",
     "@types/lodash": "4.14.182",
     "@types/node": "17.0.8",
     "husky": "9.1.7",
