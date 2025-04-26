@@ -36,7 +36,7 @@ export function getAncestorInstances(node: SceneNode) {
 function getIndexArray(
   node: SceneNode,
   rootAncestorInstance: InstanceNode,
-  array: number[]
+  array: number[],
 ): number[] {
   if (node.parent) {
     const index = findIndex(node.parent.children, child => {
@@ -49,16 +49,12 @@ function getIndexArray(
     // 親要素のidがrootAncestorInstanceと同じ場合、再帰を終了
     if (node.parent.id === rootAncestorInstance.id) {
       return array
-    } else {
-      return getIndexArray(
-        node.parent as SceneNode,
-        rootAncestorInstance,
-        array
-      )
     }
-  } else {
-    return array
+
+    return getIndexArray(node.parent as SceneNode, rootAncestorInstance, array)
   }
+
+  return array
 }
 
 // nodeの、インスタンス内でのインデックス構造を返す関数
@@ -91,7 +87,7 @@ function getChildNode(
     | FrameNode
     | BooleanOperationNode,
   indexStructure: number[],
-  loopCount: number
+  loopCount: number,
 ): SceneNode {
   // インデックスを取得
   const index = indexStructure[loopCount] as number | undefined
@@ -108,29 +104,26 @@ function getChildNode(
   if (!childNode) {
     return node
   }
+
   // 子要素がある場合
-  else {
-    // 子要素の種類がchildrenを持つタイプのNodeの場合、更に子要素を取得
-    if (
-      childNode.type === 'INSTANCE' ||
-      childNode.type === 'GROUP' ||
-      childNode.type === 'FRAME' ||
-      childNode.type === 'BOOLEAN_OPERATION'
-    ) {
-      loopCount = loopCount + 1
-      return getChildNode(childNode, indexStructure, loopCount)
-    }
-    // それ以外のタイプの場合→childNodeを返して再帰終了
-    else {
-      return childNode
-    }
+  // 子要素の種類がchildrenを持つタイプのNodeの場合、更に子要素を取得
+  if (
+    childNode.type === 'INSTANCE' ||
+    childNode.type === 'GROUP' ||
+    childNode.type === 'FRAME' ||
+    childNode.type === 'BOOLEAN_OPERATION'
+  ) {
+    return getChildNode(childNode, indexStructure, loopCount + 1)
   }
+
+  // それ以外のタイプの場合→childNodeを返して再帰終了
+  return childNode
 }
 
 // インデックス構造をコンポーネント内の要素を取得する
 export function getNodeInComponentByIndexStructure(
   node: ComponentNode,
-  indexStructure: number[]
+  indexStructure: number[],
 ) {
   const loopCount = 0
   const childNode = getChildNode(node, indexStructure, loopCount)
