@@ -37,12 +37,12 @@ async function main() {
     figma.currentPage.selection.map(async node => {
       console.log(node)
 
+      // nodeがコンポーネント or Variantsの場合
       if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
-        // nodeがコンポーネント or Variantsの場合
         // 名前をデフォルトに戻されると困るので、処理中断
         console.warn(messages.error.componentsOrVariants)
-        errorCount++
         errors.push(messages.error.componentsOrVariants)
+        errorCount++
         return
       }
 
@@ -51,8 +51,8 @@ async function main() {
       const ancestorInstances = getAncestorInstances(node)
       console.log('ancestorInstances', ancestorInstances)
 
+      // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
       if (ancestorInstances.length > 0) {
-        // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
         console.log('ancestorInstances exist')
 
         // 先祖インスタンスのメインコンポーネントを取得する
@@ -68,8 +68,8 @@ async function main() {
         // メインコンポーネントが無い場合は処理中断
         if (!mainComponentOfRootAncestorInstance) {
           console.warn(messages.error.common)
-          errorCount++
           errors.push(messages.error.common)
+          errorCount++
           return
         }
 
@@ -88,16 +88,16 @@ async function main() {
         // 同じ要素が無い場合は処理中断
         if (!sameNode) {
           console.warn(messages.error.common)
-          errorCount++
           errors.push(messages.error.common)
+          errorCount++
           return
         }
 
         // nodeの名前がsameNodeの名前とすでに同じ場合
         if (node.name === sameNode.name) {
           console.warn(messages.error.alreadyReset)
-          errorCount++
           errors.push(messages.error.alreadyReset)
+          errorCount++
           return
         }
         // 違う場合→リネーム
@@ -117,8 +117,8 @@ async function main() {
           // メインコンポーネントが無い場合は処理中断
           if (!mainComponent) {
             console.warn(messages.error.common)
-            errorCount++
             errors.push(messages.error.common)
+            errorCount++
             return
           }
 
