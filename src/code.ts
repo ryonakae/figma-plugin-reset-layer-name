@@ -27,6 +27,11 @@ async function main() {
     return
   }
 
+  // 処理結果を追跡するためのカウンター
+  let successCount = 0
+  let errorCount = 0
+  const errors: string[] = []
+
   // 選択している要素ごとに処理を実行
   await Promise.all(
     figma.currentPage.selection.map(async node => {
@@ -36,6 +41,8 @@ async function main() {
         // nodeがコンポーネント or Variantsの場合
         // 名前をデフォルトに戻されると困るので、処理中断
         console.warn(messages.error.componentsOrVariants)
+        errorCount++
+        errors.push(messages.error.componentsOrVariants)
         return
       }
 
@@ -61,6 +68,8 @@ async function main() {
         // メインコンポーネントが無い場合は処理中断
         if (!mainComponentOfRootAncestorInstance) {
           console.warn(messages.error.common)
+          errorCount++
+          errors.push(messages.error.common)
           return
         }
 
@@ -79,16 +88,21 @@ async function main() {
         // 同じ要素が無い場合は処理中断
         if (!sameNode) {
           console.warn(messages.error.common)
+          errorCount++
+          errors.push(messages.error.common)
           return
         }
 
         // nodeの名前がsameNodeの名前とすでに同じ場合
         if (node.name === sameNode.name) {
           console.warn(messages.error.alreadyReset)
+          errorCount++
+          errors.push(messages.error.alreadyReset)
           return
         }
         // 違う場合→リネーム
         node.name = sameNode.name
+        successCount++
       }
 
       // 先祖インスタンスがない場合
@@ -103,6 +117,8 @@ async function main() {
           // メインコンポーネントが無い場合は処理中断
           if (!mainComponent) {
             console.warn(messages.error.common)
+            errorCount++
+            errors.push(messages.error.common)
             return
           }
 
@@ -117,18 +133,57 @@ async function main() {
           else {
             node.name = mainComponent.name
           }
+          successCount++
         }
         // それ以外の場合
         else {
           // 名前を空にする（リセットされる）
           node.name = ''
+          successCount++
         }
       }
-
-      // 成功通知
-      figma.notify(messages.success)
     }),
   )
+
+  // 処理結果に基づいて通知を表示
+  console.log('successCount', successCount)
+  console.log('errorCount', errorCount)
+  console.log('errors', errors)
+
+  // 成功メッセージ
+  const successMessage = `Reset ${successCount} layer${successCount > 1 ? 's' : ''} name!`
+  // エラーメッセージ
+  const errorMessage = `${errorCount} layer${errorCount > 1 ? 's' : ''} had errors.`
+
+  // 1つも処理できず、エラーのみの場合
+  if (successCount === 0 && errorCount > 0) {
+    // エラーが1つだけの場合
+    if (errors.length === 1) {
+      figma.notify(errors[0], {
+        // error: true,
+      })
+    }
+    // エラーが複数ある場合
+    else {
+      figma.notify(errorMessage, {
+        // error: true,
+      })
+    }
+  }
+  // 少なくとも1つは成功した場合
+  else if (successCount > 0) {
+    // 成功とエラーの両方がある場合
+    if (errorCount > 0) {
+      figma.notify(successMessage)
+      figma.notify(errorMessage, {
+        // error: true,
+      })
+    }
+    // 成功のみの場合
+    else {
+      figma.notify(successMessage)
+    }
+  }
 
   // プラグインを終了
   figma.closePlugin()
