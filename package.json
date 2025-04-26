@@ -11,7 +11,7 @@
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
-      "biome check --apply"
+      "biome check --write"
     ]
   },
   "dependencies": {
