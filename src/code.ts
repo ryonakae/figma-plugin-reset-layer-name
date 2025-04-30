@@ -1,5 +1,5 @@
 import resetInstanceChild from '@/resetInstanceChild'
-import { getAncestorInstances } from '@/util'
+import { getAncestorInstances, handleError } from '@/util'
 
 // find系の高速化
 // figma.skipInvisibleInstanceChildren = true
@@ -8,13 +8,14 @@ import { getAncestorInstances } from '@/util'
 async function main() {
   // 1つも選択されていない場合は処理中断
   if (!figma.currentPage.selection.length) {
-    figma.notify('Please select at least one layer.')
+    figma.notify('Please select at least one layer')
     figma.closePlugin()
     return
   }
 
   // 処理結果を追跡するためのカウンター
   let successCount = 0
+  const errors: string[] = []
 
   // 選択している要素ごとに処理を実行
   await Promise.all(
@@ -24,7 +25,7 @@ async function main() {
       // nodeがコンポーネント or Variantsの場合
       if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
         // 名前をデフォルトに戻されると困るので、処理中断
-        console.warn('This element is component or variants.')
+        handleError('This element is component or variants', errors)
         return
       }
 
@@ -39,6 +40,9 @@ async function main() {
         const result = await resetInstanceChild(node, ancestorInstances[0])
         if (result.success) {
           successCount++
+        } else {
+          console.warn(result.error)
+          errors.push(result.error)
         }
       }
 
@@ -53,21 +57,32 @@ async function main() {
 
           // メインコンポーネントが無い場合は処理中断
           if (!mainComponent) {
-            console.warn('Something went wrong.')
+            handleError('Main component not found', errors)
             return
           }
 
-          // メインコンポーネントの親がvariantsの場合→nodeをvariantsの名前にする
+          // メインコンポーネントの親がvariantsの場合
           if (
             mainComponent.parent &&
             mainComponent.parent.type === 'COMPONENT_SET'
           ) {
+            // 既にVariantsと同じ名前の場合はスキップ
+            if (node.name === mainComponent.parent.name) {
+              handleError('Name already matches variant name', errors)
+              return
+            }
             node.name = mainComponent.parent.name
           }
-          // それ以外の場合→nodeをメインコンポーネントの名前にする
+          // それ以外の場合
           else {
+            // 既にメインコンポーネントと同じ名前の場合はスキップ
+            if (node.name === mainComponent.name) {
+              handleError('Name already matches component name', errors)
+              return
+            }
             node.name = mainComponent.name
           }
+
           successCount++
         }
         // それ以外の場合
@@ -85,12 +100,19 @@ async function main() {
 
   // successCountが0の場合
   if (successCount === 0) {
-    figma.notify('No layers name were reset.')
+    // errorsが1つだけの場合はそのエラーメッセージを表示
+    if (errors.length === 1) {
+      figma.notify(errors[0])
+    }
+    // errorsが複数ある場合は、汎用的なエラーメッセージを表示
+    else {
+      figma.notify('No layer names were reset')
+    }
   }
   // successCountが1以上の場合
   else {
     figma.notify(
-      `Reset ${successCount} layer${successCount > 1 ? 's' : ''} name!`,
+      `Reset ${successCount} layer ${successCount > 1 ? 'names' : 'name'}!`,
     )
   }
 

@@ -129,3 +129,12 @@ export function getNodeInComponentByIndexStructure(
   const childNode = getChildNode(node, indexStructure, loopCount)
   return childNode
 }
+
+export function handleError(message: string, errors: string[]) {
+  console.warn(message)
+  errors.push(message)
+  return {
+    success: false,
+    error: message,
+  }
+}

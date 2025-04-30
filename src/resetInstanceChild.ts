@@ -94,9 +94,9 @@ async function restoreBoundVariables(
   for (const [variableField, variableValue] of Object.entries(boundVariables)) {
     console.log(variableField, variableValue)
 
-    if (variableField === 'fills') {
-    } else if (variableField === 'strokes') {
-    } else {
+    // fieldがfillとstroke以外の場合に、setBoundVariableを実行
+    // fillとstrokeはfillsとstrokesを変更することで変数を適用する
+    if (variableField !== 'fills' && variableField !== 'strokes') {
       const variable = await figma.variables.getVariableByIdAsync(
         (variableValue as VariableAlias).id as string,
       )
@@ -207,7 +207,7 @@ async function restoreStyledTextSegment(
 export default async function resetInstanceChild(
   node: SceneNode,
   ancestorInstance: InstanceNode,
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: true } | { success: false; error: string }> {
   console.log('resetInstanceChild', node, ancestorInstance)
 
   // 先祖インスタンスに設定されているoverrideを取得
@@ -216,14 +216,24 @@ export default async function resetInstanceChild(
 
   // overridesが無い場合は処理中断
   if (!overrides.length) {
-    console.warn('no overrides')
     return { success: false, error: 'No overrides found' }
   }
 
+  // nodeと同じidのoverrideがあるか確認
+  const nodeOverride = overrides.find(override => override.id === node.id)
+
   // nodeと同じidのoverrideが無い場合は処理中断
-  if (!overrides.find(override => override.id === node.id)) {
-    console.warn('no override')
-    return { success: false, error: 'No matching override found for this node' }
+  if (!nodeOverride) {
+    return { success: false, error: 'No overrides found for this layer' }
+  }
+
+  // nameプロパティがオーバーライドされているか確認
+  // nameプロパティがオーバーライドされていない場合は処理中断
+  if (!nodeOverride.overriddenFields.includes('name')) {
+    return {
+      success: false,
+      error: 'Layer name is not overridden',
+    }
   }
 
   // overrideの各子要素ごとに、overridenFieldsの値を取得
