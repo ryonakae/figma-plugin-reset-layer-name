@@ -1,4 +1,3 @@
-import { getAncestorInstances } from '@/util'
 import { cloneDeep } from 'lodash'
 
 function getOverrideValues(
@@ -86,6 +85,24 @@ function getOverrideValues(
   })
 
   return values
+}
+
+async function restoreBoundVariables(
+  boundVariables: NonNullable<SceneNodeMixin['boundVariables']>,
+  targetNode: SceneNode,
+) {
+  for (const [variableField, variableValue] of Object.entries(boundVariables)) {
+    console.log(variableField, variableValue)
+
+    if (variableField === 'fills') {
+    } else if (variableField === 'strokes') {
+    } else {
+      const variable = await figma.variables.getVariableByIdAsync(
+        (variableValue as VariableAlias).id as string,
+      )
+      targetNode.setBoundVariable(variableField as any, variable)
+    }
+  }
 }
 
 async function restoreStyledTextSegment(
@@ -189,13 +206,9 @@ async function restoreStyledTextSegment(
 
 export default async function resetInstanceChild(
   node: SceneNode,
+  ancestorInstance: InstanceNode,
 ): Promise<{ success: boolean; error?: string }> {
-  console.log('resetInstanceChild', node)
-
-  // 先祖インスタンスを取得
-  const ancestorInstances = getAncestorInstances(node)
-  const ancestorInstance = ancestorInstances[0]
-  console.log('ancestorInstance', ancestorInstance)
+  console.log('resetInstanceChild', node, ancestorInstance)
 
   // 先祖インスタンスに設定されているoverrideを取得
   const overrides = ancestorInstance.overrides
@@ -218,7 +231,7 @@ export default async function resetInstanceChild(
   console.log('overrideValues', overrideValues)
 
   // 先祖インスタンスのoverrideをリセット
-  ancestorInstances[0].resetOverrides()
+  ancestorInstance.resetOverrides()
 
   // 先祖インスタンス自身を含む、overrideValuesに保存されている各nodeのoverrideを復元
   // node.name以外
@@ -265,37 +278,17 @@ export default async function resetInstanceChild(
 
       // fieldがnameの場合は何もしない（名前のリセットが目的のため）
       if (field === 'name') {
+        continue
       }
 
       // fieldがboundVariablesの場合
-      else if (field === 'boundVariables') {
-        console.log('boundVariables', value, targetNode.boundVariables)
-
-        // boundVariablesの各項目ごとに処理を実行
-        if (value) {
-          for (const [variableField, variableValue] of Object.entries(
-            value as NonNullable<SceneNodeMixin['boundVariables']>,
-          )) {
-            console.log(variableField, variableValue)
-
-            if (variableField === 'fills') {
-            } else if (variableField === 'strokes') {
-            } else {
-              const variable = await figma.variables.getVariableByIdAsync(
-                (variableValue as VariableAlias).id as string,
-              )
-              targetNode.setBoundVariable(variableField as any, variable)
-            }
-          }
-        }
+      if (field === 'boundVariables') {
+        restoreBoundVariables(value, targetNode)
       }
 
       // fieldがstyledTextSegmentsの場合、restoreStyledTextSegmentを実行
       else if (field === 'styledTextSegments') {
-        restoreStyledTextSegment(
-          value as StyledTextSegment[],
-          targetNode as TextNode,
-        )
+        restoreStyledTextSegment(value, targetNode as TextNode)
       }
 
       // それ以外のフィールドの場合、valueをそのまま代入
