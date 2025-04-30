@@ -15,8 +15,6 @@ async function main() {
 
   // 処理結果を追跡するためのカウンター
   let successCount = 0
-  let errorCount = 0
-  const errors: string[] = []
 
   // 選択している要素ごとに処理を実行
   await Promise.all(
@@ -26,10 +24,7 @@ async function main() {
       // nodeがコンポーネント or Variantsの場合
       if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
         // 名前をデフォルトに戻されると困るので、処理中断
-        const message = 'This element is component or variants.'
-        console.warn(message)
-        errors.push(message)
-        errorCount++
+        console.warn('This element is component or variants.')
         return
       }
 
@@ -44,9 +39,6 @@ async function main() {
         const result = await resetInstanceChild(node, ancestorInstances[0])
         if (result.success) {
           successCount++
-        } else {
-          errorCount++
-          errors.push(result.error || 'Failed to reset instance child')
         }
       }
 
@@ -61,10 +53,7 @@ async function main() {
 
           // メインコンポーネントが無い場合は処理中断
           if (!mainComponent) {
-            const message = 'Something went wrong.'
-            console.warn(message)
-            errors.push(message)
-            errorCount++
+            console.warn('Something went wrong.')
             return
           }
 
@@ -93,42 +82,16 @@ async function main() {
 
   // 処理結果に基づいて通知を表示
   console.log('successCount', successCount)
-  console.log('errorCount', errorCount)
-  console.log('errors', errors)
 
-  // 成功メッセージ
-  const successMessage = `Reset ${successCount} layer${successCount > 1 ? 's' : ''} name!`
-  // エラーメッセージ
-  const errorMessage = `${errorCount} layer${errorCount > 1 ? 's' : ''} had errors.`
-
-  // 1つも処理できず、エラーのみの場合
-  if (successCount === 0 && errorCount > 0) {
-    // エラーが1つだけの場合
-    if (errors.length === 1) {
-      figma.notify(errors[0], {
-        // error: true,
-      })
-    }
-    // エラーが複数ある場合
-    else {
-      figma.notify(errorMessage, {
-        // error: true,
-      })
-    }
+  // successCountが0の場合
+  if (successCount === 0) {
+    figma.notify('No layers name were reset.')
   }
-  // 少なくとも1つは成功した場合
-  else if (successCount > 0) {
-    // 成功とエラーの両方がある場合
-    if (errorCount > 0) {
-      figma.notify(successMessage)
-      figma.notify(errorMessage, {
-        // error: true,
-      })
-    }
-    // 成功のみの場合
-    else {
-      figma.notify(successMessage)
-    }
+  // successCountが1以上の場合
+  else {
+    figma.notify(
+      `Reset ${successCount} layer${successCount > 1 ? 's' : ''} name!`,
+    )
   }
 
   // プラグインを終了
