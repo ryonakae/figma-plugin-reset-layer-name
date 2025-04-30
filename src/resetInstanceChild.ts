@@ -187,7 +187,9 @@ async function restoreStyledTextSegment(
   }
 }
 
-export default async function resetInstanceChild(node: SceneNode) {
+export default async function resetInstanceChild(
+  node: SceneNode,
+): Promise<{ success: boolean; error?: string }> {
   console.log('resetInstanceChild', node)
 
   // 先祖インスタンスを取得
@@ -202,13 +204,13 @@ export default async function resetInstanceChild(node: SceneNode) {
   // overridesが無い場合は処理中断
   if (!overrides.length) {
     console.warn('no overrides')
-    return
+    return { success: false, error: 'No overrides found' }
   }
 
   // nodeと同じidのoverrideが無い場合は処理中断
   if (!overrides.find(override => override.id === node.id)) {
     console.warn('no override')
-    return
+    return { success: false, error: 'No matching override found for this node' }
   }
 
   // overrideの各子要素ごとに、overridenFieldsの値を取得
@@ -304,4 +306,6 @@ export default async function resetInstanceChild(node: SceneNode) {
 
     console.log(targetNode)
   }
+
+  return { success: true }
 }
