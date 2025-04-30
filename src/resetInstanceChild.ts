@@ -269,7 +269,7 @@ export default async function resetInstanceChild(
 
     // overriddenFieldsごとに処理を実行
     for (const [field, value] of Object.entries(overriddenFields)) {
-      console.log(field, value)
+      console.log('    ', field, value)
 
       // valueがundefined, null, 空配列, 空文字の場合は何もしない
       if (
@@ -296,7 +296,17 @@ export default async function resetInstanceChild(
         restoreBoundVariables(value, targetNode)
       }
 
-      // fieldがstyledTextSegmentsの場合、restoreStyledTextSegmentを実行
+      // fieldがcomponentPropertiesの場合
+      else if (field === 'componentProperties') {
+        // TODO: componentPropertiesの復元処理を実装する
+      }
+
+      // fieldがopenTypeFeaturesの場合
+      else if (field === 'openTypeFeatures') {
+        // TODO: openTypeFeaturesの復元処理を実装する
+      }
+
+      // fieldがstyledTextSegmentsの場合
       else if (field === 'styledTextSegments') {
         restoreStyledTextSegment(value, targetNode as TextNode)
       }
