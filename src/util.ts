@@ -8,7 +8,7 @@ export function getAncestorInstances(node: SceneNode) {
   // idをセミコロンで区切って配列にしたもの
   const idArray = node.id.split(';')
 
-  idArray.map((id, i) => {
+  idArray.forEach((id, i) => {
     if (i === idArray.length - 1) {
       return
     }
@@ -19,7 +19,7 @@ export function getAncestorInstances(node: SceneNode) {
       targetId = idArray[i]
     } else {
       const arr: string[] = []
-      times(i + 1).map(j => arr.push(idArray[j]))
+      times(i + 1).forEach(j => arr.push(idArray[j]))
       targetId = arr.join(';')
     }
 
