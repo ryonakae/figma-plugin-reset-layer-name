@@ -2,6 +2,13 @@ export default async function restoreStyledTextSegments(
   targetTextNode: TextNode,
   styledTextSegments: StyledTextSegment[],
 ) {
+  console.log(
+    '    ',
+    'restoreStyledTextSegments',
+    targetTextNode,
+    styledTextSegments,
+  )
+
   for (const styledTextSegment of styledTextSegments) {
     const { start, end } = styledTextSegment
     // textStyleIdがあるかどうか
@@ -19,8 +26,23 @@ export default async function restoreStyledTextSegments(
 
     // textStyleIdがない場合は、TextStyleに含まれる個別のスタイルを復元
     else {
-      // TODO: boundVariablesの復元処理を実装する
-      // targetTextNode.setRangeBoundVariable(start, end, ...)
+      // boundVariablesの復元
+      if (styledTextSegment.boundVariables) {
+        for (const [variableField, variableValue] of Object.entries(
+          styledTextSegment.boundVariables,
+        )) {
+          const variable = await figma.variables.getVariableByIdAsync(
+            (variableValue as VariableAlias).id as string,
+          )
+          targetTextNode.setRangeBoundVariable(
+            start,
+            end,
+            variableField as any,
+            variable,
+          )
+        }
+      }
+
       targetTextNode.setRangeFontName(start, end, styledTextSegment.fontName)
       targetTextNode.setRangeFontSize(start, end, styledTextSegment.fontSize)
       targetTextNode.setRangeLetterSpacing(

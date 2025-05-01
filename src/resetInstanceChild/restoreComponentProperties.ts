@@ -2,6 +2,13 @@ export default async function restoreComponentProperties(
   targetNode: InstanceNode,
   componentProperties: ComponentProperties,
 ) {
+  console.log(
+    '    ',
+    'restoreComponentProperties',
+    targetNode,
+    componentProperties,
+  )
+
   for (const [propertyName, propertyValue] of Object.entries(
     componentProperties,
   )) {

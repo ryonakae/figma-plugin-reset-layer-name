@@ -45,13 +45,17 @@ export default async function resetInstanceChild(
 
       // 先に文字列を復元
       // setRange...関数を実行する際に文字列が復元前と異なるとエラーになるため
-      targetNode.characters = overriddenFields.characters
+      if (overriddenFields.characters) {
+        targetNode.characters = overriddenFields.characters
+      }
 
       // styledTextSegmentsを復元
-      restoreStyledTextSegments(
-        targetNode as TextNode,
-        overriddenFields.styledTextSegments,
-      )
+      if (overriddenFields.styledTextSegments) {
+        await restoreStyledTextSegments(
+          targetNode as TextNode,
+          overriddenFields.styledTextSegments,
+        )
+      }
     }
 
     // charactersとstyledTextSegmentsを除いたoverriddenFieldsを定義
@@ -87,12 +91,12 @@ export default async function resetInstanceChild(
 
       // fieldがboundVariablesの場合
       if (field === 'boundVariables') {
-        restoreBoundVariables(targetNode, value)
+        await restoreBoundVariables(targetNode, value)
       }
 
       // fieldがcomponentPropertiesの場合
       else if (field === 'componentProperties') {
-        restoreComponentProperties(targetNode as InstanceNode, value)
+        await restoreComponentProperties(targetNode as InstanceNode, value)
       }
 
       // fieldがopenTypeFeaturesの場合
