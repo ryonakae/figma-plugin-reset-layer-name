@@ -26,6 +26,9 @@ export default async function resetInstanceChild(
   // 先祖インスタンスのoverrideをリセット
   ancestorInstance.resetOverrides()
 
+  // 復元したノードの数をカウントする変数
+  let restoredNodesCount = 0
+
   // 先祖インスタンス自身を含む、overrideValuesに保存されている各nodeのoverrideを復元
   // node.name以外
   for (const [nodeId, { targetNode, overriddenFields }] of Object.entries(
@@ -33,6 +36,9 @@ export default async function resetInstanceChild(
   )) {
     console.log('targetNode', targetNode)
     console.log('  ', 'overriddenFields', overriddenFields)
+
+    // ノードが復元されたかどうかを追跡するフラグ
+    let isNodeRestored = false
 
     // targetNodeがテキストの場合
     if (targetNode.type === 'TEXT') {
@@ -47,6 +53,7 @@ export default async function resetInstanceChild(
       // setRange...関数を実行する際に文字列が復元前と異なるとエラーになるため
       if (overriddenFields.characters) {
         targetNode.characters = overriddenFields.characters
+        isNodeRestored = true
       }
 
       // styledTextSegmentsを復元
@@ -55,6 +62,7 @@ export default async function resetInstanceChild(
           targetNode as TextNode,
           overriddenFields.styledTextSegments,
         )
+        isNodeRestored = true
       }
     }
 
@@ -67,6 +75,10 @@ export default async function resetInstanceChild(
 
     // filteredOverriddenFieldEntriesが0件なら処理をスキップ
     if (!filteredOverriddenFieldEntries.length) {
+      // テキストノードで既に復元を行っていた場合はカウントする
+      if (isNodeRestored) {
+        restoredNodesCount++
+      }
       continue
     }
 
@@ -92,11 +104,13 @@ export default async function resetInstanceChild(
       // fieldがboundVariablesの場合
       if (field === 'boundVariables') {
         await restoreBoundVariables(targetNode, value)
+        isNodeRestored = true
       }
 
       // fieldがcomponentPropertiesの場合
       else if (field === 'componentProperties') {
         await restoreComponentProperties(targetNode as InstanceNode, value)
+        isNodeRestored = true
       }
 
       // fieldがopenTypeFeaturesの場合
@@ -110,6 +124,8 @@ export default async function resetInstanceChild(
         await figma.loadFontAsync(value as FontName)
         // valueを代入
         ;(targetNode as any).fontName = value
+
+        isNodeRestored = true
       }
 
       // fieldがfillsの場合
@@ -119,6 +135,8 @@ export default async function resetInstanceChild(
         ;(targetNode as any).fills = []
         // fillsを代入
         ;(targetNode as any).fills = fills
+
+        isNodeRestored = true
       }
 
       // fieldがstorokesの場合
@@ -128,13 +146,27 @@ export default async function resetInstanceChild(
         ;(targetNode as any).strokes = []
         // strokesを代入
         ;(targetNode as any).strokes = strokes
+
+        isNodeRestored = true
       }
 
       // それ以外のフィールドの場合、valueをそのまま代入
       else {
         ;(targetNode as any)[field] = value
+
+        isNodeRestored = true
       }
     }
+
+    // ノードが少なくとも1つのフィールドで復元された場合、カウントを増やす
+    if (isNodeRestored) {
+      restoredNodesCount++
+    }
+  }
+
+  // 復元したノードが1つもない場合はfalseを返す
+  if (restoredNodesCount === 0) {
+    return { success: false, error: 'No nodes restored' }
   }
 
   return { success: true }
