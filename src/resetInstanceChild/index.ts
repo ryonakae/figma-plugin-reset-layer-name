@@ -32,7 +32,7 @@ export default async function resetInstanceChild(
     overrideValues,
   )) {
     console.log('targetNode', targetNode)
-    console.log('  overriddenFields', overriddenFields)
+    console.log('  ', 'overriddenFields', overriddenFields)
 
     // targetNodeがテキストの場合
     if (targetNode.type === 'TEXT') {
@@ -109,7 +109,25 @@ export default async function resetInstanceChild(
         // フォントをロード
         await figma.loadFontAsync(value as FontName)
         // valueを代入
-        ;(targetNode as any)[field] = value
+        ;(targetNode as any).fontName = value
+      }
+
+      // fieldがfillsの場合
+      else if (field === 'fills') {
+        const fills = value
+        // いったんfillsを空にする
+        ;(targetNode as any).fills = []
+        // fillsを代入
+        ;(targetNode as any).fills = fills
+      }
+
+      // fieldがstorokesの場合
+      else if (field === 'strokes') {
+        const strokes = value
+        // いったんstrokesを空にする
+        ;(targetNode as any).strokes = []
+        // strokesを代入
+        ;(targetNode as any).strokes = strokes
       }
 
       // それ以外のフィールドの場合、valueをそのまま代入

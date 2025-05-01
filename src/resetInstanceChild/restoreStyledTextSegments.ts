@@ -14,6 +14,9 @@ export default async function restoreStyledTextSegments(
     // textStyleIdがあるかどうか
     const hasTextStyleId =
       styledTextSegment.textStyleId && styledTextSegment.textStyleId !== ''
+    // fillStyleIdがあるかどうか
+    const hasFillStyleId =
+      styledTextSegment.fillStyleId && styledTextSegment.fillStyleId !== ''
 
     // textStyleIdがある場合は、textStyleIdを復元
     if (hasTextStyleId) {
@@ -23,7 +26,6 @@ export default async function restoreStyledTextSegments(
         styledTextSegment.textStyleId,
       )
     }
-
     // textStyleIdがない場合は、TextStyleに含まれる個別のスタイルを復元
     else {
       // boundVariablesの復元
@@ -78,14 +80,21 @@ export default async function restoreStyledTextSegments(
       )
     }
 
+    // fillStyleIdがある場合は、fillStyleIdを復元
+    if (hasFillStyleId) {
+      await targetTextNode.setRangeFillStyleIdAsync(
+        start,
+        end,
+        styledTextSegment.fillStyleId,
+      )
+    }
+    // fillStyleIdがない場合は、fillsを復元
+    else {
+      targetTextNode.setRangeFills(start, end, styledTextSegment.fills)
+    }
+
     // textStyleIdの有無に関わらず常に復元するプロパティ
     // fill関連
-    targetTextNode.setRangeFillStyleId(
-      start,
-      end,
-      styledTextSegment.fillStyleId,
-    )
-    targetTextNode.setRangeFills(start, end, styledTextSegment.fills)
     targetTextNode.setRangeHyperlink(start, end, styledTextSegment.hyperlink)
     targetTextNode.setRangeIndentation(
       start,
