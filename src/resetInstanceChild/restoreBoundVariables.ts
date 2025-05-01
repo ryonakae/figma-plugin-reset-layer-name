@@ -3,7 +3,7 @@ export default async function restoreBoundVariables(
   boundVariables: NonNullable<SceneNodeMixin['boundVariables']>,
 ) {
   for (const [variableField, variableValue] of Object.entries(boundVariables)) {
-    console.log(variableField, variableValue)
+    // console.log(variableField, variableValue)
 
     // fieldがfillとstroke以外の場合に、setBoundVariableを実行
     // fillとstrokeはfillsとstrokesを変更することで変数を適用する

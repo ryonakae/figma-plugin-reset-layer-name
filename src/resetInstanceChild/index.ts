@@ -105,6 +105,14 @@ export default async function resetInstanceChild(
         restoreStyledTextSegment(targetNode as TextNode, value)
       }
 
+      // fieldがfontNameの場合、フォントをロードしてからvalueを代入
+      else if (field === 'fontName') {
+        // フォントをロード
+        await figma.loadFontAsync(value as FontName)
+        // valueを代入
+        ;(targetNode as any)[field] = value
+      }
+
       // それ以外のフィールドの場合、valueをそのまま代入
       else {
         ;(targetNode as any)[field] = value
