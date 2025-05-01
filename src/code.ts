@@ -1,4 +1,4 @@
-import resetInstanceChild from '@/resetInstanceChild'
+import resetInstance from '@/resetInstance'
 import { getAncestorInstances, handleError } from '@/util'
 
 // find系の高速化
@@ -35,9 +35,9 @@ async function main() {
       console.log('ancestorInstances', ancestorInstances)
 
       // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
-      // resetInstanceChildを実行
       if (ancestorInstances.length > 0) {
-        const result = await resetInstanceChild(
+        // resetInstanceを実行 (parentInstanceはancestorInstancesの最後の要素)
+        const result = await resetInstance(
           node,
           ancestorInstances[ancestorInstances.length - 1],
         )
@@ -55,38 +55,14 @@ async function main() {
 
         // nodeがインスタンスの場合
         if (node.type === 'INSTANCE') {
-          // メインコンポーネントを取得
-          const mainComponent = node.mainComponent
-
-          // メインコンポーネントが無い場合は処理中断
-          if (!mainComponent) {
-            handleError('Main component not found', errors)
-            return
+          // resetInstanceを実行 (parentInstanceはnode自身)
+          const result = await resetInstance(node, node)
+          if (result.success) {
+            successCount++
+          } else {
+            console.warn(result.error)
+            errors.push(result.error)
           }
-
-          // メインコンポーネントの親がvariantsの場合
-          if (
-            mainComponent.parent &&
-            mainComponent.parent.type === 'COMPONENT_SET'
-          ) {
-            // 既にVariantsと同じ名前の場合はスキップ
-            if (node.name === mainComponent.parent.name) {
-              handleError('Name already matches variant name', errors)
-              return
-            }
-            node.name = mainComponent.parent.name
-          }
-          // それ以外の場合
-          else {
-            // 既にメインコンポーネントと同じ名前の場合はスキップ
-            if (node.name === mainComponent.name) {
-              handleError('Name already matches component name', errors)
-              return
-            }
-            node.name = mainComponent.name
-          }
-
-          successCount++
         }
         // それ以外の場合
         else {

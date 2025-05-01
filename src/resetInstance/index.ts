@@ -1,35 +1,35 @@
-import getOverrideValues from '@/resetInstanceChild/getOverrideValues'
-import restoreBoundVariables from '@/resetInstanceChild/restoreBoundVariables'
-import restoreComponentProperties from '@/resetInstanceChild/restoreComponentProperties'
-import restoreStyledTextSegments from '@/resetInstanceChild/restoreStyledTextSegments'
-import validate from '@/resetInstanceChild/validate'
+import getOverrideValues from '@/resetInstance/getOverrideValues'
+import restoreBoundVariables from '@/resetInstance/restoreBoundVariables'
+import restoreComponentProperties from '@/resetInstance/restoreComponentProperties'
+import restoreStyledTextSegments from '@/resetInstance/restoreStyledTextSegments'
+import validate from '@/resetInstance/validate'
 
-export default async function resetInstanceChild(
+export default async function resetInstance(
   node: SceneNode,
-  ancestorInstance: InstanceNode,
+  parentInstance: InstanceNode,
 ): Promise<Result> {
-  console.log('resetInstanceChild', node, ancestorInstance)
+  console.log('resetInstanceChild', node, parentInstance)
 
   // 前提条件の検証
-  const validationResult = validate(node, ancestorInstance)
+  const validationResult = validate(node, parentInstance)
   if (!validationResult.success) {
     return validationResult
   }
 
   // overrideの各子要素ごとに、overridenFieldsの値を取得
   const overrideValues = getOverrideValues(
-    ancestorInstance.overrides,
-    ancestorInstance,
+    parentInstance.overrides,
+    parentInstance,
   )
   console.log('overrideValues', overrideValues)
 
-  // 先祖インスタンスのoverrideをリセット
-  ancestorInstance.resetOverrides()
+  // 親インスタンスのoverrideをリセット
+  parentInstance.resetOverrides()
 
   // 復元したノードの数をカウントする変数
   let restoredNodesCount = 0
 
-  // 先祖インスタンス自身を含む、overrideValuesに保存されている各nodeのoverrideを復元
+  // 親インスタンス自身を含む、overrideValuesに保存されている各nodeのoverrideを復元
   // node.name以外
   for (const [nodeId, { targetNode, overriddenFields }] of Object.entries(
     overrideValues,

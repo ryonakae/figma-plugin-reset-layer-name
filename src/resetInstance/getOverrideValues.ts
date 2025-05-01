@@ -5,9 +5,9 @@ export default function getOverrideValues(
     id: string
     overriddenFields: NodeChangeProperty[]
   }[],
-  ancestorInstance: InstanceNode,
+  parentInstance: InstanceNode,
 ) {
-  console.log('getOverrideValues', overrides, ancestorInstance)
+  console.log('getOverrideValues', overrides, parentInstance)
 
   // インスタンスの子要素のoverrideの値を格納するためのマップを作成
   const valuesMap: OverrideValuesMap = {}
@@ -17,13 +17,13 @@ export default function getOverrideValues(
     // 対象nodeを取得
     let targetNode: SceneNode
 
-    // override.idがancestorInstance.idと同じ場合は、ancestorInstanceを対象nodeにする
-    if (override.id === ancestorInstance.id) {
-      targetNode = ancestorInstance
+    // override.idがparentInstance.idと同じ場合は、parentInstanceを対象nodeにする
+    if (override.id === parentInstance.id) {
+      targetNode = parentInstance
     }
     // そうでない場合は、インスタンスから要素を検索する
     else {
-      targetNode = ancestorInstance.findOne(
+      targetNode = parentInstance.findOne(
         node => node.id === override.id,
       ) as SceneNode
     }
@@ -84,8 +84,8 @@ export default function getOverrideValues(
     })
   })
 
-  // ancestorInstanceの子要素からインスタンスを探して、componentPropertiesを取得
-  const childInstances = ancestorInstance.findAll(
+  // parentInstanceの子要素からインスタンスを探して、componentPropertiesを取得
+  const childInstances = parentInstance.findAll(
     node => node.type === 'INSTANCE',
   ) as InstanceNode[]
   childInstances.forEach(instance => {
