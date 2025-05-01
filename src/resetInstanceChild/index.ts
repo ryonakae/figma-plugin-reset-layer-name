@@ -77,12 +77,6 @@ export default async function resetInstanceChild(
         (Array.isArray(value) && value.length === 0) ||
         (typeof value === 'string' && value.length === 0)
       ) {
-        console.log(
-          '      ',
-          field,
-          value,
-          'undefined, null, empty array or empty string',
-        )
         continue
       }
 
