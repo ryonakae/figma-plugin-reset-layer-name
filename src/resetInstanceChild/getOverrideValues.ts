@@ -152,9 +152,20 @@ export default function getOverrideValues(
   // ソートした結果をオブジェクトに戻す
   const values: typeof valuesMap = {}
   sortedEntries.forEach(entry => {
+    // overriddenFieldsのキーをアルファベット順にソートして新しいオブジェクトを作成
+    const sortedFields: { [field: string]: unknown } = {}
+
+    // キーを取得してアルファベット順にソート
+    const keys = Object.keys(entry.overriddenFields).sort()
+
+    // ソートされたキーの順番で新しいオブジェクトを構築
+    keys.forEach(key => {
+      sortedFields[key] = entry.overriddenFields[key]
+    })
+
     values[entry.id] = {
       targetNode: entry.targetNode,
-      overriddenFields: entry.overriddenFields,
+      overriddenFields: sortedFields,
     }
   })
 
