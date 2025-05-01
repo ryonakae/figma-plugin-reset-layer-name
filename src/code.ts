@@ -37,7 +37,10 @@ async function main() {
       // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
       // resetInstanceChildを実行
       if (ancestorInstances.length > 0) {
-        const result = await resetInstanceChild(node, ancestorInstances[0])
+        const result = await resetInstanceChild(
+          node,
+          ancestorInstances[ancestorInstances.length - 1],
+        )
         if (result.success) {
           successCount++
         } else {

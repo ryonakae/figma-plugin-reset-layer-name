@@ -1,4 +1,4 @@
-import { cloneDeep } from 'lodash'
+import { cloneDeep, orderBy } from 'lodash'
 
 function getOverrideValues(
   overrides: {
@@ -9,8 +9,8 @@ function getOverrideValues(
 ) {
   console.log('getOverrideValues', overrides, ancestorInstance)
 
-  // インスタンスの子要素のoverrideの値を格納する配列を作成
-  const values: {
+  // インスタンスの子要素のoverrideの値を格納するためのマップを作成
+  const valuesMap: {
     [id: string]: {
       targetNode: SceneNode
       overriddenFields: {
@@ -35,7 +35,7 @@ function getOverrideValues(
       ) as SceneNode
     }
 
-    values[override.id] = { targetNode, overriddenFields: {} }
+    valuesMap[override.id] = { targetNode, overriddenFields: {} }
 
     override.overriddenFields.forEach(overridenField => {
       // styledTextSegmentsの場合
@@ -67,29 +67,69 @@ function getOverrideValues(
           'openTypeFeatures',
           'boundVariables',
         ])
-        values[override.id].overriddenFields.styledTextSegments =
+        valuesMap[override.id].overriddenFields.styledTextSegments =
           styledTextSegments
       }
       // stokeTopWeightの場合
       // Plugin APIのバグでstrokeTopWeightがstokeTopWeightになっているため
       else if (overridenField === 'stokeTopWeight') {
         const value = (targetNode as any).strokeTopWeight
-        values[override.id].overriddenFields.strokeTopWeight = value
+        valuesMap[override.id].overriddenFields.strokeTopWeight = value
       }
       // それ以外のフィールドの場合、lodashのcloneDeepを使用して値を保存
       else {
         const value = cloneDeep((targetNode as any)[overridenField])
-        values[override.id].overriddenFields[overridenField] = value
+        valuesMap[override.id].overriddenFields[overridenField] = value
       }
     })
+  })
+
+  // idキーとvalueの配列に変換
+  const entries = Object.entries(valuesMap).map(([id, value]) => ({
+    id,
+    ...value,
+  }))
+
+  // 並び替え条件に従ってソート
+  const sortedEntries = orderBy(
+    entries,
+    [
+      // 1. idの文字数（セグメント数）が少ない順
+      entry => entry.id.split(';').length,
+      // 2. id内の数値が若い順（数値部分のみを比較）
+      entry => {
+        // 各セグメントを分解し、数値部分を抽出して比較用の文字列を生成
+        return entry.id
+          .split(';')
+          .map(segment => {
+            // 数値部分を抽出（数字以外は無視）
+            const numPart = segment.replace(/\D/g, '')
+            // 0埋めして桁数を揃える（ソート用）
+            return numPart.padStart(10, '0')
+          })
+          .join(';')
+      },
+      // 3. targetNodeがInstanceNodeのものを上に
+      entry => (entry.targetNode.type === 'INSTANCE' ? 0 : 1),
+    ],
+    ['asc', 'asc', 'asc'], // すべて昇順
+  )
+
+  // ソートした結果をオブジェクトに戻す
+  const values: typeof valuesMap = {}
+  sortedEntries.forEach(entry => {
+    values[entry.id] = {
+      targetNode: entry.targetNode,
+      overriddenFields: entry.overriddenFields,
+    }
   })
 
   return values
 }
 
 async function restoreBoundVariables(
-  boundVariables: NonNullable<SceneNodeMixin['boundVariables']>,
   targetNode: SceneNode,
+  boundVariables: NonNullable<SceneNodeMixin['boundVariables']>,
 ) {
   for (const [variableField, variableValue] of Object.entries(boundVariables)) {
     console.log(variableField, variableValue)
@@ -106,8 +146,8 @@ async function restoreBoundVariables(
 }
 
 async function restoreStyledTextSegment(
-  styledTextSegments: StyledTextSegment[],
   targetTextNode: TextNode,
+  styledTextSegments: StyledTextSegment[],
 ) {
   for (const styledTextSegment of styledTextSegments) {
     const { start, end } = styledTextSegment
@@ -204,6 +244,29 @@ async function restoreStyledTextSegment(
   }
 }
 
+async function restoreComponentProperties(
+  targetNode: InstanceNode,
+  componentProperties: ComponentProperties,
+) {
+  for (const [propertyName, propertyValue] of Object.entries(
+    componentProperties,
+  )) {
+    // バリアブルが割り当てられている場合
+    if (propertyValue.boundVariables?.value) {
+      // VariableAliasを設定
+      targetNode.setProperties({
+        [propertyName]: propertyValue.boundVariables.value,
+      })
+    }
+    // それ以外の場合
+    else {
+      targetNode.setProperties({
+        [propertyName]: propertyValue.value,
+      })
+    }
+  }
+}
+
 export default async function resetInstanceChild(
   node: SceneNode,
   ancestorInstance: InstanceNode,
@@ -212,7 +275,7 @@ export default async function resetInstanceChild(
 
   // 先祖インスタンスに設定されているoverrideを取得
   const overrides = ancestorInstance.overrides
-  console.log('overrides', overrides)
+  console.log('ancestorInstance overrides', overrides)
 
   // overridesが無い場合は処理中断
   if (!overrides.length) {
@@ -245,7 +308,7 @@ export default async function resetInstanceChild(
 
   // 先祖インスタンス自身を含む、overrideValuesに保存されている各nodeのoverrideを復元
   // node.name以外
-  for (const [_nodeId, { targetNode, overriddenFields }] of Object.entries(
+  for (const [nodeId, { targetNode, overriddenFields }] of Object.entries(
     overrideValues,
   )) {
     console.log('targetNode', targetNode)
@@ -267,8 +330,18 @@ export default async function resetInstanceChild(
       }
     }
 
-    // overriddenFieldsごとに処理を実行
-    for (const [field, value] of Object.entries(overriddenFields)) {
+    // charactersを除いたoverriddenFieldsを定義
+    const filteredOverriddenFieldEntries = Object.entries(
+      overriddenFields,
+    ).filter(([field]) => field !== 'characters')
+
+    // filteredOverriddenFieldEntriesが0件なら処理をスキップ
+    if (!filteredOverriddenFieldEntries.length) {
+      continue
+    }
+
+    // filteredOverriddenFieldEntriesごとに処理を実行
+    for (const [field, value] of filteredOverriddenFieldEntries) {
       console.log('    ', field, value)
 
       // valueがundefined, null, 空配列, 空文字の場合は何もしない
@@ -286,19 +359,19 @@ export default async function resetInstanceChild(
         continue
       }
 
-      // fieldがnameの場合は何もしない（名前のリセットが目的のため）
-      if (field === 'name') {
+      // node.idとnodeIdが同じかつfieldがnameの場合は何もしない（名前のリセットが目的のため）
+      if (node.id === nodeId && field === 'name') {
         continue
       }
 
       // fieldがboundVariablesの場合
       if (field === 'boundVariables') {
-        restoreBoundVariables(value, targetNode)
+        restoreBoundVariables(targetNode, value)
       }
 
       // fieldがcomponentPropertiesの場合
       else if (field === 'componentProperties') {
-        // TODO: componentPropertiesの復元処理を実装する
+        restoreComponentProperties(targetNode as InstanceNode, value)
       }
 
       // fieldがopenTypeFeaturesの場合
@@ -308,7 +381,7 @@ export default async function resetInstanceChild(
 
       // fieldがstyledTextSegmentsの場合
       else if (field === 'styledTextSegments') {
-        restoreStyledTextSegment(value, targetNode as TextNode)
+        restoreStyledTextSegment(targetNode as TextNode, value)
       }
 
       // それ以外のフィールドの場合、valueをそのまま代入
@@ -316,8 +389,6 @@ export default async function resetInstanceChild(
         ;(targetNode as any)[field] = value
       }
     }
-
-    console.log(targetNode)
   }
 
   return { success: true }
