@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const path = require('path')
+const path = require('node:path')
 const TerserPlugin = require('terser-webpack-plugin')
 
 module.exports = (env, argv) =>
@@ -8,26 +8,26 @@ module.exports = (env, argv) =>
     mode: argv.mode === 'production' ? 'production' : 'development',
     devtool: argv.mode === 'production' ? false : 'inline-source-map',
     entry: {
-      code: './src/code.ts'
+      code: './src/code.ts',
     },
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: '[name].js',
-      clean: true
+      clean: true,
     },
     module: {
       rules: [
         {
           test: /\.tsx?$/,
-          use: 'ts-loader'
-        }
-      ]
+          use: 'ts-loader',
+        },
+      ],
     },
     resolve: {
       extensions: ['.ts'],
       alias: {
-        '@': path.resolve(__dirname, 'src')
-      }
+        '@': path.resolve(__dirname, 'src'),
+      },
     },
     optimization: {
       minimizer: [
@@ -37,13 +37,13 @@ module.exports = (env, argv) =>
             sourceMap: false,
             warnings: false,
             compress: {
-              pure_funcs: ['console.log', 'console.error', 'console.warn']
+              pure_funcs: ['console.log', 'console.error', 'console.warn'],
             },
             output: {
-              comments: /@license/i
-            }
-          }
-        })
-      ]
-    }
+              comments: /@license/i,
+            },
+          },
+        }),
+      ],
+    },
   })
