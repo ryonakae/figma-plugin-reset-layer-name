@@ -86,18 +86,12 @@ export default async function resetInstanceChild(
 
       // fieldがboundVariablesの場合
       if (field === 'boundVariables') {
-        restoreBoundVariables(
-          targetNode,
-          value as NonNullable<SceneNodeMixin['boundVariables']>,
-        )
+        restoreBoundVariables(targetNode, value)
       }
 
       // fieldがcomponentPropertiesの場合
       else if (field === 'componentProperties') {
-        restoreComponentProperties(
-          targetNode as InstanceNode,
-          value as ComponentProperties,
-        )
+        restoreComponentProperties(targetNode as InstanceNode, value)
       }
 
       // fieldがopenTypeFeaturesの場合
@@ -107,10 +101,7 @@ export default async function resetInstanceChild(
 
       // fieldがstyledTextSegmentsの場合
       else if (field === 'styledTextSegments') {
-        restoreStyledTextSegment(
-          targetNode as TextNode,
-          value as StyledTextSegment[],
-        )
+        restoreStyledTextSegment(targetNode as TextNode, value)
       }
 
       // それ以外のフィールドの場合、valueをそのまま代入
