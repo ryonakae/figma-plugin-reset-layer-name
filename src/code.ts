@@ -22,6 +22,12 @@ async function main() {
     figma.currentPage.selection.map(async node => {
       console.log(node)
 
+      // nodeがTextNodeでautoRenameがtrueの場合は処理をスキップ
+      if (node.type === 'TEXT' && node.autoRename) {
+        handleError('Name already reset', errors)
+        return
+      }
+
       // nodeがコンポーネント or Variantsの場合
       if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
         // 名前をデフォルトに戻されると困るので、処理中断

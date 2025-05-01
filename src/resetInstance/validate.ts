@@ -21,7 +21,7 @@ export default function validate(
   if (!nodeOverride.overriddenFields.includes('name')) {
     return {
       success: false,
-      error: 'Layer name is not overridden',
+      error: 'Name already reset',
     }
   }
 
