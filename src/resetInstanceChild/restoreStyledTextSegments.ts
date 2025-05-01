@@ -1,4 +1,4 @@
-export default async function restoreStyledTextSegment(
+export default async function restoreStyledTextSegments(
   targetTextNode: TextNode,
   styledTextSegments: StyledTextSegment[],
 ) {

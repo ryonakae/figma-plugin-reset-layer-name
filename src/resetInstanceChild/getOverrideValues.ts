@@ -30,12 +30,40 @@ export default function getOverrideValues(
 
     valuesMap[override.id] = { targetNode, overriddenFields: {} }
 
-    // TextNodeの場合は、charactersを常に取得する
+    // TextNodeの場合は、charactersとstyledTextSegmentsを常に取得する
     if (targetNode.type === 'TEXT') {
       const textNode = targetNode as TextNode
 
       // charactersを取得
       valuesMap[override.id].overriddenFields.characters = textNode.characters
+
+      // styledTextSegmentsを取得（すべてのフィールドを指定）
+      valuesMap[override.id].overriddenFields.styledTextSegments =
+        textNode.getStyledTextSegments([
+          'fontSize',
+          'fontName',
+          'fontWeight',
+          'textDecoration',
+          'textDecorationStyle',
+          'textDecorationOffset',
+          'textDecorationThickness',
+          'textDecorationColor',
+          'textDecorationSkipInk',
+          'textCase',
+          'lineHeight',
+          'letterSpacing',
+          'fills',
+          'textStyleId',
+          'fillStyleId',
+          'listOptions',
+          'listSpacing',
+          'indentation',
+          'paragraphIndent',
+          'paragraphSpacing',
+          'hyperlink',
+          'openTypeFeatures',
+          'boundVariables',
+        ])
     }
 
     override.overriddenFields.forEach(overridenField => {
@@ -54,6 +82,34 @@ export default function getOverrideValues(
         valuesMap[override.id].overriddenFields[overridenField] = value
       }
     })
+  })
+
+  // ancestorInstanceの子要素からインスタンスを探して、componentPropertiesを取得
+  const childInstances = ancestorInstance.findAll(
+    node => node.type === 'INSTANCE',
+  ) as InstanceNode[]
+  childInstances.forEach(instance => {
+    // componentPropertiesが存在し、空でない場合のみ処理
+    if (
+      instance.componentProperties &&
+      Object.keys(instance.componentProperties).length > 0
+    ) {
+      // すでにvaluesMapに存在する場合は、overriddenFieldsにcomponentPropertiesを追加
+      if (valuesMap[instance.id]) {
+        valuesMap[instance.id].overriddenFields.componentProperties = cloneDeep(
+          instance.componentProperties,
+        )
+      }
+      // まだvaluesMapに存在しない場合は、新たにエントリを作成
+      else {
+        valuesMap[instance.id] = {
+          targetNode: instance,
+          overriddenFields: {
+            componentProperties: cloneDeep(instance.componentProperties),
+          },
+        }
+      }
+    }
   })
 
   // idキーとvalueの配列に変換

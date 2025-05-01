@@ -1,7 +1,7 @@
 import getOverrideValues from '@/resetInstanceChild/getOverrideValues'
 import restoreBoundVariables from '@/resetInstanceChild/restoreBoundVariables'
 import restoreComponentProperties from '@/resetInstanceChild/restoreComponentProperties'
-import restoreStyledTextSegment from '@/resetInstanceChild/restoreStyledTextSegment'
+import restoreStyledTextSegments from '@/resetInstanceChild/restoreStyledTextSegments'
 import validate from '@/resetInstanceChild/validate'
 
 export default async function resetInstanceChild(
@@ -45,15 +45,21 @@ export default async function resetInstanceChild(
 
       // 先に文字列を復元
       // setRange...関数を実行する際に文字列が復元前と異なるとエラーになるため
-      if (overriddenFields.characters) {
-        targetNode.characters = overriddenFields.characters
-      }
+      targetNode.characters = overriddenFields.characters
+
+      // styledTextSegmentsを復元
+      restoreStyledTextSegments(
+        targetNode as TextNode,
+        overriddenFields.styledTextSegments,
+      )
     }
 
-    // charactersを除いたoverriddenFieldsを定義
+    // charactersとstyledTextSegmentsを除いたoverriddenFieldsを定義
     const filteredOverriddenFieldEntries = Object.entries(
       overriddenFields,
-    ).filter(([field]) => field !== 'characters')
+    ).filter(
+      ([field]) => field !== 'characters' && field !== 'styledTextSegments',
+    )
 
     // filteredOverriddenFieldEntriesが0件なら処理をスキップ
     if (!filteredOverriddenFieldEntries.length) {
@@ -98,11 +104,6 @@ export default async function resetInstanceChild(
       // fieldがopenTypeFeaturesの場合
       // 現状openTypeFeaturesはreadonlyなので何もしない
       else if (field === 'openTypeFeatures') {
-      }
-
-      // fieldがstyledTextSegmentsの場合
-      else if (field === 'styledTextSegments') {
-        restoreStyledTextSegment(targetNode as TextNode, value)
       }
 
       // fieldがfontNameの場合、フォントをロードしてからvalueを代入
