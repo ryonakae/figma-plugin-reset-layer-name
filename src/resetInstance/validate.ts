@@ -21,7 +21,7 @@ export default function validate(
   if (!nodeOverride.overriddenFields.includes('name')) {
     return {
       success: false,
-      error: 'Name already reset',
+      error: 'Name has already been reset',
     }
   }
 

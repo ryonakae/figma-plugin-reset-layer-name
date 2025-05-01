@@ -24,7 +24,7 @@ async function main() {
 
       // nodeがTextNodeでautoRenameがtrueの場合は処理をスキップ
       if (node.type === 'TEXT' && node.autoRename) {
-        handleError('Name already reset', errors)
+        handleError('Name has already been reset', errors)
         return
       }
 
