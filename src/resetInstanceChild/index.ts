@@ -32,7 +32,7 @@ export default async function resetInstanceChild(
     overrideValues,
   )) {
     console.log('targetNode', targetNode)
-    console.log('overriddenFields', overriddenFields)
+    console.log('  overriddenFields', overriddenFields)
 
     // targetNodeがテキストの場合
     if (targetNode.type === 'TEXT') {
@@ -72,6 +72,7 @@ export default async function resetInstanceChild(
         (typeof value === 'string' && value.length === 0)
       ) {
         console.log(
+          '      ',
           field,
           value,
           'undefined, null, empty array or empty string',
@@ -95,8 +96,8 @@ export default async function resetInstanceChild(
       }
 
       // fieldがopenTypeFeaturesの場合
+      // 現状openTypeFeaturesはreadonlyなので何もしない
       else if (field === 'openTypeFeatures') {
-        // TODO: openTypeFeaturesの復元処理を実装する
       }
 
       // fieldがstyledTextSegmentsの場合

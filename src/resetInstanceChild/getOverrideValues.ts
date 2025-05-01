@@ -30,39 +30,17 @@ export default function getOverrideValues(
 
     valuesMap[override.id] = { targetNode, overriddenFields: {} }
 
+    // TextNodeの場合は、charactersを常に取得する
+    if (targetNode.type === 'TEXT') {
+      const textNode = targetNode as TextNode
+
+      // charactersを取得
+      valuesMap[override.id].overriddenFields.characters = textNode.characters
+    }
+
     override.overriddenFields.forEach(overridenField => {
-      // styledTextSegmentsの場合
-      if (overridenField === 'styledTextSegments') {
-        const styledTextSegments = (
-          targetNode as TextNode
-        ).getStyledTextSegments([
-          'fontSize',
-          'fontName',
-          'fontWeight',
-          'textDecoration',
-          'textDecorationStyle',
-          'textDecorationOffset',
-          'textDecorationThickness',
-          'textDecorationColor',
-          'textDecorationSkipInk',
-          'textCase',
-          'lineHeight',
-          'letterSpacing',
-          'fills',
-          'textStyleId',
-          'fillStyleId',
-          'listOptions',
-          'listSpacing',
-          'indentation',
-          'paragraphIndent',
-          'paragraphSpacing',
-          'hyperlink',
-          'openTypeFeatures',
-          'boundVariables',
-          'textStyleOverrides',
-        ])
-        valuesMap[override.id].overriddenFields.styledTextSegments =
-          styledTextSegments
+      // charactersの場合（TextNodeの場合は既に取得済みなのでスキップ）
+      if (overridenField === 'characters' && targetNode.type === 'TEXT') {
       }
       // stokeTopWeightの場合
       // Plugin APIのバグでstrokeTopWeightがstokeTopWeightになっているため
@@ -79,7 +57,13 @@ export default function getOverrideValues(
   })
 
   // idキーとvalueの配列に変換
-  const entries = Object.entries(valuesMap).map(([id, value]) => ({
+  type EntryType = {
+    id: string
+    targetNode: SceneNode
+    overriddenFields: { [field: string]: unknown }
+  }
+
+  const entries: EntryType[] = Object.entries(valuesMap).map(([id, value]) => ({
     id,
     ...value,
   }))
