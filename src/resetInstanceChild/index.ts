@@ -2,41 +2,25 @@ import getOverrideValues from '@/resetInstanceChild/getOverrideValues'
 import restoreBoundVariables from '@/resetInstanceChild/restoreBoundVariables'
 import restoreComponentProperties from '@/resetInstanceChild/restoreComponentProperties'
 import restoreStyledTextSegment from '@/resetInstanceChild/restoreStyledTextSegment'
+import validate from '@/resetInstanceChild/validate'
 
 export default async function resetInstanceChild(
   node: SceneNode,
   ancestorInstance: InstanceNode,
-): Promise<{ success: true } | { success: false; error: string }> {
+): Promise<Result> {
   console.log('resetInstanceChild', node, ancestorInstance)
 
-  // 先祖インスタンスに設定されているoverrideを取得
-  const overrides = ancestorInstance.overrides
-  console.log('ancestorInstance overrides', overrides)
-
-  // overridesが無い場合は処理中断
-  if (!overrides.length) {
-    return { success: false, error: 'No overrides found' }
-  }
-
-  // nodeと同じidのoverrideがあるか確認
-  const nodeOverride = overrides.find(override => override.id === node.id)
-
-  // nodeと同じidのoverrideが無い場合は処理中断
-  if (!nodeOverride) {
-    return { success: false, error: 'No overrides found for this layer' }
-  }
-
-  // nameプロパティがオーバーライドされているか確認
-  // nameプロパティがオーバーライドされていない場合は処理中断
-  if (!nodeOverride.overriddenFields.includes('name')) {
-    return {
-      success: false,
-      error: 'Layer name is not overridden',
-    }
+  // 前提条件の検証
+  const validationResult = validate(node, ancestorInstance)
+  if (!validationResult.success) {
+    return validationResult
   }
 
   // overrideの各子要素ごとに、overridenFieldsの値を取得
-  const overrideValues = getOverrideValues(overrides, ancestorInstance)
+  const overrideValues = getOverrideValues(
+    ancestorInstance.overrides,
+    ancestorInstance,
+  )
   console.log('overrideValues', overrideValues)
 
   // 先祖インスタンスのoverrideをリセット
@@ -102,12 +86,18 @@ export default async function resetInstanceChild(
 
       // fieldがboundVariablesの場合
       if (field === 'boundVariables') {
-        restoreBoundVariables(targetNode, value)
+        restoreBoundVariables(
+          targetNode,
+          value as NonNullable<SceneNodeMixin['boundVariables']>,
+        )
       }
 
       // fieldがcomponentPropertiesの場合
       else if (field === 'componentProperties') {
-        restoreComponentProperties(targetNode as InstanceNode, value)
+        restoreComponentProperties(
+          targetNode as InstanceNode,
+          value as ComponentProperties,
+        )
       }
 
       // fieldがopenTypeFeaturesの場合
@@ -117,7 +107,10 @@ export default async function resetInstanceChild(
 
       // fieldがstyledTextSegmentsの場合
       else if (field === 'styledTextSegments') {
-        restoreStyledTextSegment(targetNode as TextNode, value)
+        restoreStyledTextSegment(
+          targetNode as TextNode,
+          value as StyledTextSegment[],
+        )
       }
 
       // それ以外のフィールドの場合、valueをそのまま代入

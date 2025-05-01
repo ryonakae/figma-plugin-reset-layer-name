@@ -10,14 +10,7 @@ export default function getOverrideValues(
   console.log('getOverrideValues', overrides, ancestorInstance)
 
   // インスタンスの子要素のoverrideの値を格納するためのマップを作成
-  const valuesMap: {
-    [id: string]: {
-      targetNode: SceneNode
-      overriddenFields: {
-        [field: string]: any
-      }
-    }
-  } = {}
+  const valuesMap: OverrideValuesMap = {}
 
   // overrideの各子要素ごとに、overridenFieldsの値を取得
   overrides.forEach(override => {
@@ -66,6 +59,7 @@ export default function getOverrideValues(
           'hyperlink',
           'openTypeFeatures',
           'boundVariables',
+          'textStyleOverrides',
         ])
         valuesMap[override.id].overriddenFields.styledTextSegments =
           styledTextSegments

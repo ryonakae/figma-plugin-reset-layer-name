@@ -5,6 +5,7 @@ export default async function restoreStyledTextSegment(
   for (const styledTextSegment of styledTextSegments) {
     const { start, end } = styledTextSegment
 
+    // TODO: boundVariablesの復元処理を実装する
     // targetTextNode.setRangeBoundVariable(start, end)
     targetTextNode.setRangeFillStyleId(
       start,
