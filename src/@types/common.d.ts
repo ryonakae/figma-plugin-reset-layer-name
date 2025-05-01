@@ -110,7 +110,7 @@ declare global {
     hyperlink: HyperlinkTarget | null
     mediaData: MediaData
     stokeTopWeight: number
-    strokeTopWeight: number // 追加
+    strokeTopWeight: number // 追加 (Figma Plugin APIのバグでstrokeTopWeightがstokeTopWeightになっているため)
     strokeBottomWeight: number
     strokeLeftWeight: number
     strokeRightWeight: number
