@@ -9,9 +9,8 @@
 - Biome 1.9.4 (リンター・フォーマッター)
 
 ### ビルドツール
-- Webpack 5.65.0
-- Terser Webpack Plugin 5.3.0
-- ts-loader 9.2.6
+- esbuild 0.25.3
+- rimraf 6.0.1
 
 ### 開発ツール
 - Husky 9.1.7 (Git フック)
@@ -79,7 +78,7 @@ Figmaのレイヤー名をデフォルト値にリセットするためのプラ
   - 結果は `Result` 型で返し、成功/失敗を明示的に表現
 - デバッグ:
   - 開発時には `console.log` を使用して状態を確認
-  - 本番ビルドでは Terser プラグインを使って除去
+  - 本番ビルドでは esbuild の `--drop:console` オプションを使って除去
 - 非同期処理:
   - Promise より `async/await` を優先
   - エラーは適切に `try/catch` または Result 型で処理
