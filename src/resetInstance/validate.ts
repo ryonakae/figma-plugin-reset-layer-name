@@ -1,3 +1,17 @@
+/**
+ * リセット処理の実行条件を検証する関数
+ *
+ * インスタンスのオーバーライドをリセットする前に、以下の条件を確認する：
+ * 1. インスタンスにオーバーライドが存在するか
+ * 2. 対象ノードにオーバーライドが設定されているか
+ * 3. 特に名前のオーバーライドが存在するか（レイヤー名リセットが目的のため）
+ *
+ * これにより、不必要な処理の実行を防ぎ、エラーメッセージを適切に返す
+ *
+ * @param node - 検証対象のノード
+ * @param ancestorInstance - ノードの先祖インスタンス
+ * @returns 検証結果を表すResultオブジェクト
+ */
 export default function validate(
   node: SceneNode,
   ancestorInstance: InstanceNode,

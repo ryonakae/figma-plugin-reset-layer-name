@@ -4,6 +4,22 @@ import restoreComponentProperties from '@/resetInstance/restoreComponentProperti
 import restoreStyledTextSegments from '@/resetInstance/restoreStyledTextSegments'
 import validate from '@/resetInstance/validate'
 
+/**
+ * インスタンスとその子要素をリセットする関数
+ *
+ * インスタンスのオーバーライドをリセットし、メインコンポーネントの名前に戻す処理を実行する。
+ * ただし、テキストスタイルや他のプロパティなど、名前以外のオーバーライドは保持する。
+ *
+ * 処理の流れ:
+ * 1. 対象ノードの検証
+ * 2. オーバーライド値の取得と保存
+ * 3. インスタンスのオーバーライドをリセット
+ * 4. 保存したオーバーライド値の中で、名前以外の値を復元
+ *
+ * @param node - リセット対象のノード
+ * @param parentInstance - nodeの親インスタンス（nodeがインスタンス自体の場合は自分自身）
+ * @returns 処理結果を表すResultオブジェクト
+ */
 export default async function resetInstance(
   node: SceneNode,
   parentInstance: InstanceNode,

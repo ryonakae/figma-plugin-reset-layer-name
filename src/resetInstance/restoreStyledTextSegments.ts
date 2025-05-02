@@ -1,3 +1,17 @@
+/**
+ * テキストノードのスタイルセグメントを復元する関数
+ *
+ * リセット処理後に、テキストノードに設定されていた複雑なスタイル情報を復元する
+ * これにより、テキスト内の部分的なフォント、サイズ、色などの書式設定が維持される
+ *
+ * 処理の複雑さ:
+ * - テキストスタイルIDがある場合は、それを優先的に復元
+ * - 個別のスタイル属性（フォント、サイズ、行間など）を範囲ごとに復元
+ * - 塗りつぶしスタイルも同様に処理
+ *
+ * @param targetTextNode - スタイルを復元する対象テキストノード
+ * @param styledTextSegments - 復元するスタイルセグメント情報の配列
+ */
 export default async function restoreStyledTextSegments(
   targetTextNode: TextNode,
   styledTextSegments: StyledTextSegment[],
