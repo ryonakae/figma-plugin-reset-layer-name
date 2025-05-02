@@ -2,41 +2,41 @@
 
 ![](./cover.png)
 
-Reset names of selected layers to default.  
-You can reset names of EVERY element!  
-Text, frames, groups, rectangles, instance, etc.
+Resets the names of selected layers to their default values.  
+This plugin supports **every type of element** you can select in Figma!
 
-## 🔥 How to use
+## 🔥 How to Use
 
-1. Select one or more layers.
-2. Run this plugin.
-3. Enjoy🤟
+1.  Select one or more layers.
+2.  Run this plugin.
+3.  Layer names will be reset!
 
 ## ✏️ Note: Behavior
 
-This plugin behaves differently depending on the type of element selected.
+The plugin's behavior varies depending on the selected element type:
 
-(Component or variants)  
-This plugin will not rename and keep the original name of the component or variants.
+### Component or Variants
+The names of Components or Component Sets (Variants) will not be changed to preserve their original names.
 
-(Instance)  
-This plugin renames the element to the name of the main component.
+### Instance or Child element of an Instance
+The name override for the selected instance or child element is reset.  
 
-(Child element of instance)  
-This plugin renames element to the name of the same child element of the main component.  
-Note: Due to limitations of the plugin API, it is not resetting the override. It just renames to the same name.
+- For an **Instance**: All overrides on the instance itself are reset, then all overrides except for the name are restored.
+- For a **Child element of an Instance**: All overrides on the *parent* instance are reset, then all overrides except for the name are restored. This effectively resets the name override inherited by the child element.
 
-(Other types of elements)  
-This plugin renames the element to empty. That is, it resets it.
+*Note: Due to Figma API limitations, OpenType features on TextNodes within the instance (or parent instance) cannot be restored during this process.*
+
+### Other Element Types
+The names of other elements (like Text, Rectangle, Frame, Group, etc.) will be reset to an empty string.
 
 ## 📮 Support
 
-If you have any plobrem or feedback, please use the [GitHub Issues](https://github.com/ryonakae/figma-plugin-reset-layer-name/issues).
+If you encounter any problems or have feedback, please use the [GitHub Issues](https://github.com/ryonakae/figma-plugin-reset-layer-name/issues).
 
 ---
 
 This plugin is made by Ryo Nakae 🙎‍♂️.
 
 - https://brdr.jp
-- https://twitter.com/ryo_dg
+- https://x.com/ryo_dg
 - https://github.com/ryonakae
