@@ -4,10 +4,9 @@
   "license": "MIT",
   "author": "Ryo Nakae",
   "scripts": {
-    "clean": "rimraf dist",
-    "build": "pnpm clean && esbuild src/code.ts --bundle --outdir=dist --target=es6 --alias:@=./src --minify --drop:console",
+    "build": "esbuild src/code.ts --bundle --outdir=dist --target=es6 --alias:@=./src --minify --drop:console",
     "check": "biome check",
-    "dev": "pnpm clean && esbuild src/code.ts --bundle --outdir=dist --target=es6 --alias:@=./src --watch",
+    "dev": "esbuild src/code.ts --bundle --outdir=dist --target=es6 --alias:@=./src --watch",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -24,7 +23,6 @@
     "esbuild": "0.25.3",
     "husky": "9.1.7",
     "lint-staged": "15.5.1",
-    "rimraf": "6.0.1",
     "typescript": "4.5.4"
   }
 }
