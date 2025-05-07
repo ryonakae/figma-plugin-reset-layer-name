@@ -24,7 +24,7 @@ export default async function resetInstance(
   node: SceneNode,
   parentInstance: InstanceNode,
 ): Promise<Result> {
-  console.log('resetInstanceChild', node, parentInstance)
+  console.log('resetInstanceChild', node.name, node, parentInstance)
 
   // 前提条件の検証
   const validationResult = validate(node, parentInstance)
@@ -50,7 +50,7 @@ export default async function resetInstance(
   for (const [nodeId, { targetNode, overriddenFields }] of Object.entries(
     overrideValues,
   )) {
-    console.log('targetNode', targetNode)
+    console.log('targetNode', targetNode.name, targetNode)
     console.log('  ', 'overriddenFields', overriddenFields)
 
     // ノードが復元されたかどうかを追跡するフラグ
@@ -102,18 +102,23 @@ export default async function resetInstance(
     for (const [field, value] of filteredOverriddenFieldEntries) {
       console.log('    ', field, value)
 
-      // valueがundefined, null, 空配列, 空文字の場合は何もしない
+      // valueがundefined, null, 空配列, 空文字、空オブジェクトの場合は何もしない
       if (
         value === undefined ||
         value === null ||
         (Array.isArray(value) && value.length === 0) ||
-        (typeof value === 'string' && value.length === 0)
+        (typeof value === 'string' && value.length === 0) ||
+        (typeof value === 'object' &&
+          value !== null &&
+          Object.keys(value).length === 0)
       ) {
+        console.log('      ', 'skip because value is empty')
         continue
       }
 
       // node.idとnodeIdが同じかつfieldがnameの場合は何もしない（名前のリセットが目的のため）
       if (node.id === nodeId && field === 'name') {
+        console.log('      ', 'skip because field is name')
         continue
       }
 
@@ -164,6 +169,20 @@ export default async function resetInstance(
         ;(targetNode as any).strokes = strokes
 
         isNodeRestored = true
+      }
+
+      // fieldがwidthの場合
+      else if (field === 'width') {
+        const width = value
+        const height = targetNode.height
+        ;(targetNode as any).resize(width, height)
+      }
+
+      // fieldがheightの場合
+      else if (field === 'height') {
+        const width = targetNode.width
+        const height = value
+        ;(targetNode as any).resize(width, height)
       }
 
       // それ以外のフィールドの場合、valueをそのまま代入

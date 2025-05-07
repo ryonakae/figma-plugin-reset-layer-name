@@ -36,42 +36,58 @@ async function main() {
   const errors: string[] = []
 
   // 選択している要素ごとに処理を実行
-  await Promise.all(
-    figma.currentPage.selection.map(async node => {
-      console.log(node)
+  for (const node of figma.currentPage.selection) {
+    console.log(node)
 
-      // nodeがTextNodeでautoRenameがtrueの場合は処理をスキップ
-      // autoRename=trueのテキストは既に自動的に名前が設定されているため、
-      // 手動でリセットする必要がない
-      if (node.type === 'TEXT' && node.autoRename) {
-        handleError('Name has already been reset', errors)
-        return
+    // nodeがTextNodeでautoRenameがtrueの場合は処理をスキップ
+    // autoRename=trueのテキストは既に自動的に名前が設定されているため、
+    // 手動でリセットする必要がない
+    if (node.type === 'TEXT' && node.autoRename) {
+      handleError('Name has already been reset', errors)
+      continue
+    }
+
+    // nodeがコンポーネント or Variantsの場合
+    // コンポーネントとバリアントは名前を保持する必要があるため、
+    // 処理をスキップして警告を表示する
+    if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
+      // 名前をデフォルトに戻されると困るので、処理中断
+      handleError('This element is component or variants', errors)
+      continue
+    }
+
+    // nodeがそれ以外の場合
+    // 先祖インスタンスを取得
+    // インスタンス内の要素とそれ以外の要素で処理を分ける必要があるため
+    const ancestorInstances = getAncestorInstances(node)
+    console.log('ancestorInstances', ancestorInstances)
+
+    // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
+    // インスタンス内の要素はコンポーネントの対応する要素から名前を取得するため、
+    // resetInstance関数を使用して適切に処理する
+    if (ancestorInstances.length > 0) {
+      // resetInstanceを実行 (parentInstanceはancestorInstancesの最後の要素)
+      const result = await resetInstance(
+        node,
+        ancestorInstances[ancestorInstances.length - 1],
+      )
+      if (result.success) {
+        successCount++
+      } else {
+        console.warn(result.error)
+        errors.push(result.error)
       }
+    }
+    // 先祖インスタンスがない場合
+    else {
+      console.log('no ancestorInstances')
 
-      // nodeがコンポーネント or Variantsの場合
-      // コンポーネントとバリアントは名前を保持する必要があるため、
-      // 処理をスキップして警告を表示する
-      if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
-        // 名前をデフォルトに戻されると困るので、処理中断
-        handleError('This element is component or variants', errors)
-        return
-      }
-
-      // nodeがそれ以外の場合
-      // 先祖インスタンスを取得
-      // インスタンス内の要素とそれ以外の要素で処理を分ける必要があるため
-      const ancestorInstances = getAncestorInstances(node)
-      console.log('ancestorInstances', ancestorInstances)
-
-      // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
-      // インスタンス内の要素はコンポーネントの対応する要素から名前を取得するため、
-      // resetInstance関数を使用して適切に処理する
-      if (ancestorInstances.length > 0) {
-        // resetInstanceを実行 (parentInstanceはancestorInstancesの最後の要素)
-        const result = await resetInstance(
-          node,
-          ancestorInstances[ancestorInstances.length - 1],
-        )
+      // nodeがインスタンスの場合
+      // インスタンス自体はコンポーネントの名前を取得するため、
+      // 自分自身をparentInstanceとしてresetInstanceを実行
+      if (node.type === 'INSTANCE') {
+        // resetInstanceを実行 (parentInstanceはnode自身)
+        const result = await resetInstance(node, node)
         if (result.success) {
           successCount++
         } else {
@@ -79,34 +95,15 @@ async function main() {
           errors.push(result.error)
         }
       }
-
-      // 先祖インスタンスがない場合
+      // それ以外の場合
+      // インスタンスでもコンポーネントでもない通常の要素は単に名前を空にする
       else {
-        console.log('no ancestorInstances')
-
-        // nodeがインスタンスの場合
-        // インスタンス自体はコンポーネントの名前を取得するため、
-        // 自分自身をparentInstanceとしてresetInstanceを実行
-        if (node.type === 'INSTANCE') {
-          // resetInstanceを実行 (parentInstanceはnode自身)
-          const result = await resetInstance(node, node)
-          if (result.success) {
-            successCount++
-          } else {
-            console.warn(result.error)
-            errors.push(result.error)
-          }
-        }
-        // それ以外の場合
-        // インスタンスでもコンポーネントでもない通常の要素は単に名前を空にする
-        else {
-          // 名前を空にする（リセットされる）
-          node.name = ''
-          successCount++
-        }
+        // 名前を空にする（リセットされる）
+        node.name = ''
+        successCount++
       }
-    }),
-  )
+    }
+  }
 
   // 処理結果に基づいて通知を表示
   // 成功数に応じて適切なメッセージを選択し、ユーザーに通知する
