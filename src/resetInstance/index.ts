@@ -3,6 +3,7 @@ import restoreComponentProperties from '@/resetInstance/restoreComponentProperti
 import restoreOverriddenFields from '@/resetInstance/restoreOverriddenFields'
 import restoreStyledTextSegments from '@/resetInstance/restoreStyledTextSegments'
 import validate from '@/resetInstance/validate'
+import { getAncestorInstances } from '@/util'
 
 /**
  * インスタンスとその子要素をリセットする関数
@@ -114,21 +115,44 @@ export default async function resetInstance(
       filteredOverriddenFieldEntries,
     )
 
+    // targetNodeの先祖インスタンスを取得
+    const ancestorInstances = getAncestorInstances(targetNode)
+    if (ancestorInstances.length > 0) {
+      // 親インスタンスを取得
+      const parentInstance = ancestorInstances[ancestorInstances.length - 1]
+
+      const parentInstanceOverrideValue = overrideValues[parentInstance.id]
+
+      console.log(
+        '  ',
+        'parentInstanceOverrideValue:',
+        parentInstanceOverrideValue,
+      )
+
+      if (parentInstanceOverrideValue?.overriddenFields.componentProperties) {
+        // 親要素のcomponentPropertiesを取得
+        const parentComponentProperties = parentInstanceOverrideValue
+          .overriddenFields.componentProperties as
+          | ComponentProperties
+          | undefined
+
+        if (parentComponentProperties) {
+          console.log('  ', 'restore parentInstance componentProperties:', {
+            parentInstance,
+            parentComponentProperties,
+          })
+          await restoreComponentProperties(
+            parentInstance,
+            parentComponentProperties,
+          )
+        }
+      }
+    }
+
     // ノードが少なくとも1つのフィールドで復元された場合、カウントを増やす
     if (isNodeRestored) {
       restoredNodesCount++
     }
-  }
-
-  // 親インスタンスのcomponentPropertiesを復元(変更されている場合のみ)
-  // ↑でおこなった子要素の復元により、プロパティの値が変わってしまう可能性があるため
-  if (overrideValues[parentInstance.id].overriddenFields.componentProperties) {
-    const componentProperties = overrideValues[parentInstance.id]
-      .overriddenFields.componentProperties as ComponentProperties
-
-    await restoreComponentProperties(parentInstance, componentProperties)
-
-    restoredNodesCount++
   }
 
   // 復元したノードが1つもない場合はfalseを返す
