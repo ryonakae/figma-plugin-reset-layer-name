@@ -31,6 +31,19 @@ async function main() {
     return
   }
 
+  // 通知を表示 (選択しているノード数に応じてメッセージを変更)
+  const processingNotification = figma.notify(
+    `Resetting layer ${
+      figma.currentPage.selection.length > 1 ? 'names' : 'name'
+    }...`,
+    {
+      timeout: Infinity,
+    },
+  )
+
+  // 1frame分待機
+  await new Promise(resolve => setTimeout(resolve, 16))
+
   // 処理結果を追跡するためのカウンター
   let successCount = 0
   const errors: string[] = []
@@ -104,6 +117,9 @@ async function main() {
       }
     }
   }
+
+  // 処理中の通知を今すぐ閉じる
+  processingNotification.cancel()
 
   // 処理結果に基づいて通知を表示
   // 成功数に応じて適切なメッセージを選択し、ユーザーに通知する
