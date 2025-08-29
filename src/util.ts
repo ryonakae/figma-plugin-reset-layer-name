@@ -1,4 +1,4 @@
-import { findIndex, times } from 'es-toolkit/compat'
+import { findIndex, times } from 'lodash-es'
 
 /**
  * nodeのidから先祖インスタンスの配列を返す関数
