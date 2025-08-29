@@ -1,4 +1,4 @@
-import { findIndex, times } from 'lodash'
+import { findIndex, times } from 'es-toolkit/compat'
 
 /**
  * nodeのidから先祖インスタンスの配列を返す関数
@@ -29,7 +29,7 @@ export function getAncestorInstances(node: SceneNode) {
       targetId = idArray[i]
     } else {
       const arr: string[] = []
-      times(i + 1).forEach(j => arr.push(idArray[j]))
+      times(i + 1).map(j => arr.push(idArray[j]))
       targetId = arr.join(';')
     }
 

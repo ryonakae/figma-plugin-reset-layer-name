@@ -10,15 +10,16 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "**/*.{ts,tsx}": ["biome check --write"]
+    "**/*.{ts,tsx}": [
+      "biome check --write"
+    ]
   },
   "dependencies": {
-    "lodash": "4.17.21"
+    "es-toolkit": "1.39.10"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.2",
     "@figma/plugin-typings": "1.117.0",
-    "@types/lodash": "4.17.20",
     "@types/node": "22.14.0",
     "esbuild": "0.25.9",
     "husky": "9.1.7",

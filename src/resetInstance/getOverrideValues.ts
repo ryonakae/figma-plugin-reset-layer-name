@@ -1,4 +1,4 @@
-import { cloneDeep, orderBy } from 'lodash'
+import { cloneDeep, orderBy } from 'es-toolkit'
 
 /**
  * インスタンスのオーバーライド値を取得・整理する関数

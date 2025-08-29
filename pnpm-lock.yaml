@@ -8,9 +8,9 @@ importers:
 
   .:
     dependencies:
-      lodash:
-        specifier: 4.17.21
-        version: 4.17.21
+      es-toolkit:
+        specifier: 1.39.10
+        version: 1.39.10
     devDependencies:
       '@biomejs/biome':
         specifier: 2.2.2
@@ -18,9 +18,6 @@ importers:
       '@figma/plugin-typings':
         specifier: 1.117.0
         version: 1.117.0
-      '@types/lodash':
-        specifier: 4.17.20
-        version: 4.17.20
       '@types/node':
         specifier: 22.14.0
         version: 22.14.0
@@ -251,9 +248,6 @@ packages:
   '@figma/plugin-typings@1.117.0':
     resolution: {integrity: sha512-EDirBOeOcS90SQ5SwrJyTiL6iJxG/81U9nzJJkBqdWRHGMfFWAOydbAlcRylgETKwIKRlflL92nNSt+WmnweKA==}
 
-  '@types/lodash@4.17.20':
-    resolution: {integrity: sha512-H3MHACvFUEiujabxhaI/ImO6gUrd8oOurg7LQtS7mbwIXA/cUqWrvBsaeJ23aZEPk1TAYkurjfMbSELfoCXlGA==}
-
   '@types/node@22.14.0':
     resolution: {integrity: sha512-Kmpl+z84ILoG+3T/zQFyAJsU6EPTmOCj8/2+83fSN6djd6I4o7uOuGIH6vq3PrjY5BGitSbFuMN18j3iknubbA==}
 
@@ -308,6 +302,9 @@ packages:
     resolution: {integrity: sha512-xUtoPkMggbz0MPyPiIWr1Kp4aeWJjDZ6SMvURhimjdZgsRuDplF5/s9hcgGhyXMhs+6vpnuoiZ2kFiu3FMnS8Q==}
     engines: {node: '>=18'}
 
+  es-toolkit@1.39.10:
+    resolution: {integrity: sha512-E0iGnTtbDhkeczB0T+mxmoVlT4YNweEKBLq7oaU4p11mecdsZpNWOglI4895Vh4usbQ+LsJiuLuI2L0Vdmfm2w==}
+
   esbuild@0.25.9:
     resolution: {integrity: sha512-CRbODhYyQx3qp7ZEwzxOk4JBqmD/seJrzPa/cGjY1VtIn5E09Oi9/dB4JwctnfZ8Q8iT7rioVv5k/FNT/uf54g==}
     engines: {node: '>=18'}
@@ -353,9 +350,6 @@ packages:
   listr2@9.0.2:
     resolution: {integrity: sha512-VVd7cS6W+vLJu2wmq4QmfVj14Iep7cz4r/OWNk36Aq5ZOY7G8/BfCrQFexcwB1OIxB3yERiePfE/REBjEFulag==}
     engines: {node: '>=20.0.0'}
-
-  lodash@4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
 
   log-update@6.1.0:
     resolution: {integrity: sha512-9ie8ItPR6tjY5uYJh8K/Zrv/RMZ5VOlOWvtZdEHYSTFKZfIBPQa9tOAEeAWhd+AnIneLJ22w5fjOYtoutpWq5w==}
@@ -558,8 +552,6 @@ snapshots:
 
   '@figma/plugin-typings@1.117.0': {}
 
-  '@types/lodash@4.17.20': {}
-
   '@types/node@22.14.0':
     dependencies:
       undici-types: 6.21.0
@@ -598,6 +590,8 @@ snapshots:
   emoji-regex@10.4.0: {}
 
   environment@1.1.0: {}
+
+  es-toolkit@1.39.10: {}
 
   esbuild@0.25.9:
     optionalDependencies:
@@ -671,8 +665,6 @@ snapshots:
       log-update: 6.1.0
       rfdc: 1.4.1
       wrap-ansi: 9.0.0
-
-  lodash@4.17.21: {}
 
   log-update@6.1.0:
     dependencies:
