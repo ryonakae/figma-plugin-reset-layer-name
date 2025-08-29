@@ -16,12 +16,10 @@ export default async function restoreStyledTextSegments(
   targetTextNode: TextNode,
   styledTextSegments: StyledTextSegment[],
 ) {
-  console.log(
-    '    ',
-    'restoreStyledTextSegments',
+  console.log('    ', 'restoreStyledTextSegments:', {
     targetTextNode,
     styledTextSegments,
-  )
+  })
 
   for (const styledTextSegment of styledTextSegments) {
     const { start, end } = styledTextSegment

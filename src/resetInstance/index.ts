@@ -1,6 +1,6 @@
 import getOverrideValues from '@/resetInstance/getOverrideValues'
-import restoreBoundVariables from '@/resetInstance/restoreBoundVariables'
 import restoreComponentProperties from '@/resetInstance/restoreComponentProperties'
+import restoreOverriddenFields from '@/resetInstance/restoreOverriddenFields'
 import restoreStyledTextSegments from '@/resetInstance/restoreStyledTextSegments'
 import validate from '@/resetInstance/validate'
 
@@ -24,7 +24,11 @@ export default async function resetInstance(
   node: SceneNode,
   parentInstance: InstanceNode,
 ): Promise<Result> {
-  console.log('resetInstanceChild', node.name, node, parentInstance)
+  console.log('resetInstanceChild:', {
+    'node.name': node.name,
+    node,
+    parentInstance,
+  })
 
   // 前提条件の検証
   const validationResult = validate(node, parentInstance)
@@ -37,7 +41,7 @@ export default async function resetInstance(
     parentInstance.overrides,
     parentInstance,
   )
-  console.log('overrideValues', overrideValues)
+  console.log('overrideValues:', { overrideValues })
 
   // 親インスタンスのoverrideをリセット
   parentInstance.resetOverrides()
@@ -45,13 +49,17 @@ export default async function resetInstance(
   // 復元したノードの数をカウントする変数
   let restoredNodesCount = 0
 
-  // 親インスタンス自身を含む、overrideValuesに保存されている各nodeのoverrideを復元
-  // node.name以外
+  // 親インスタンス自身を含む、overrideValuesに保存されている各nodeのoverrideを復元 (node.name以外)
+  // まず親インスタンスを復元してから子要素を復元するような順番で処理する
+  // 親インスタンスでバリアントを変更したりしている場合、子要素が見つからないなどの問題が起きる可能性があるため
   for (const [nodeId, { targetNode, overriddenFields }] of Object.entries(
     overrideValues,
   )) {
-    console.log('targetNode', targetNode.name, targetNode)
-    console.log('  ', 'overriddenFields', overriddenFields)
+    console.log('targetNode:', {
+      'targetNode.name': targetNode.name,
+      targetNode,
+    })
+    console.log('  ', 'overriddenFields:', { overriddenFields })
 
     // ノードが復元されたかどうかを追跡するフラグ
     let isNodeRestored = false
@@ -98,105 +106,29 @@ export default async function resetInstance(
       continue
     }
 
-    // filteredOverriddenFieldEntriesごとに処理を実行
-    for (const [field, value] of filteredOverriddenFieldEntries) {
-      console.log('    ', field, value)
-
-      // valueがundefined, null, 空配列, 空文字、空オブジェクトの場合は何もしない
-      if (
-        value === undefined ||
-        value === null ||
-        (Array.isArray(value) && value.length === 0) ||
-        (typeof value === 'string' && value.length === 0) ||
-        (typeof value === 'object' &&
-          value !== null &&
-          Object.keys(value).length === 0)
-      ) {
-        console.log('      ', 'skip because value is empty')
-        continue
-      }
-
-      // node.idとnodeIdが同じかつfieldがnameの場合は何もしない（名前のリセットが目的のため）
-      if (node.id === nodeId && field === 'name') {
-        console.log('      ', 'skip because field is name')
-        continue
-      }
-
-      // fieldがboundVariablesの場合
-      if (field === 'boundVariables') {
-        await restoreBoundVariables(targetNode, value)
-        isNodeRestored = true
-      }
-
-      // fieldがcomponentPropertiesの場合
-      else if (field === 'componentProperties') {
-        await restoreComponentProperties(targetNode as InstanceNode, value)
-        isNodeRestored = true
-      }
-
-      // fieldがopenTypeFeaturesの場合
-      // 現状openTypeFeaturesはreadonlyなので何もしない
-      else if (field === 'openTypeFeatures') {
-      }
-
-      // fieldがfontNameの場合、フォントをロードしてからvalueを代入
-      else if (field === 'fontName') {
-        // フォントをロード
-        await figma.loadFontAsync(value as FontName)
-        // valueを代入
-        ;(targetNode as any).fontName = value
-
-        isNodeRestored = true
-      }
-
-      // fieldがfillsの場合
-      else if (field === 'fills') {
-        const fills = value
-        // いったんfillsを空にする
-        ;(targetNode as any).fills = []
-        // fillsを代入
-        ;(targetNode as any).fills = fills
-
-        isNodeRestored = true
-      }
-
-      // fieldがstorokesの場合
-      else if (field === 'strokes') {
-        const strokes = value
-        // いったんstrokesを空にする
-        ;(targetNode as any).strokes = []
-        // strokesを代入
-        ;(targetNode as any).strokes = strokes
-
-        isNodeRestored = true
-      }
-
-      // fieldがwidthの場合
-      else if (field === 'width') {
-        const width = value
-        const height = targetNode.height
-        ;(targetNode as any).resize(width, height)
-      }
-
-      // fieldがheightの場合
-      else if (field === 'height') {
-        const width = targetNode.width
-        const height = value
-        ;(targetNode as any).resize(width, height)
-      }
-
-      // それ以外のフィールドの場合、valueをそのまま代入
-      else {
-        ;(targetNode as any)[field] = value
-
-        isNodeRestored = true
-      }
-    }
+    // filteredOverriddenFieldEntriesの各要素に対して復元処理を実行 (name以外)
+    isNodeRestored = await restoreOverriddenFields(
+      nodeId,
+      node,
+      targetNode,
+      filteredOverriddenFieldEntries,
+    )
 
     // ノードが少なくとも1つのフィールドで復元された場合、カウントを増やす
     if (isNodeRestored) {
       restoredNodesCount++
     }
+  }
+
+  // 親インスタンスのcomponentPropertiesを復元(変更されている場合のみ)
+  // ↑でおこなった子要素の復元により、プロパティの値が変わってしまう可能性があるため
+  if (overrideValues[parentInstance.id].overriddenFields.componentProperties) {
+    const componentProperties = overrideValues[parentInstance.id]
+      .overriddenFields.componentProperties as ComponentProperties
+
+    await restoreComponentProperties(parentInstance, componentProperties)
+
+    restoredNodesCount++
   }
 
   // 復元したノードが1つもない場合はfalseを返す

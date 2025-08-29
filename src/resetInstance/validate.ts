@@ -18,7 +18,7 @@ export default function validate(
 ): Result {
   // 先祖インスタンスに設定されているoverrideを取得
   const overrides = ancestorInstance.overrides
-  console.log('ancestorInstance overrides', overrides)
+  console.log('ancestorInstance overrides:', { overrides })
 
   // overridesが無い場合は処理中断
   if (!overrides.length) {

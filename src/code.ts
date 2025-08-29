@@ -73,7 +73,7 @@ async function main() {
     // 先祖インスタンスを取得
     // インスタンス内の要素とそれ以外の要素で処理を分ける必要があるため
     const ancestorInstances = getAncestorInstances(node)
-    console.log('ancestorInstances', ancestorInstances)
+    console.log('ancestorInstances:', { ancestorInstances })
 
     // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
     // インスタンス内の要素はコンポーネントの対応する要素から名前を取得するため、
@@ -123,7 +123,7 @@ async function main() {
 
   // 処理結果に基づいて通知を表示
   // 成功数に応じて適切なメッセージを選択し、ユーザーに通知する
-  console.log('successCount', successCount)
+  console.log('successCount:', { successCount })
 
   // successCountが0の場合
   if (successCount === 0) {

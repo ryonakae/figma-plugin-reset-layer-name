@@ -24,7 +24,7 @@ export default function getOverrideValues(
   }[],
   parentInstance: InstanceNode,
 ) {
-  console.log('getOverrideValues', overrides, parentInstance)
+  console.log('getOverrideValues:', { overrides, parentInstance })
 
   // インスタンスの子要素のoverrideの値を格納するためのマップを作成
   const valuesMap: OverrideValuesMap = {}
