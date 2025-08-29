@@ -145,6 +145,7 @@ export default async function resetInstance(
             parentInstance,
             parentComponentProperties,
           )
+          isNodeRestored = true
         }
       }
     }

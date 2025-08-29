@@ -37,6 +37,7 @@ export default async function restoreOverriddenFields(
     // node.idとnodeIdが同じかつfieldがnameの場合は何もしない（名前のリセットが目的のため）
     if (node.id === nodeId && field === 'name') {
       console.log('      ', 'skip because field is name')
+      isNodeRestored = true
       continue
     }
 
