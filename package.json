@@ -4,9 +4,9 @@
   "license": "MIT",
   "author": "Ryo Nakae",
   "scripts": {
-    "build": "esbuild src/code.ts --bundle --outdir=dist --target=es6 --alias:@=./src --minify --drop:console",
+    "build": "esbuild src/code.ts --bundle --outdir=dist --target=es2017 --alias:@=./src --minify --drop:console",
     "check": "biome check",
-    "dev": "esbuild src/code.ts --bundle --outdir=dist --target=es6 --alias:@=./src --watch",
+    "dev": "esbuild src/code.ts --bundle --outdir=dist --target=es2017 --alias:@=./src --sourcemap=inline --watch",
     "prepare": "husky"
   },
   "lint-staged": {
