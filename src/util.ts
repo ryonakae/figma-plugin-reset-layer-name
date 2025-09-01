@@ -10,16 +10,16 @@ import { findIndex, times } from 'lodash-es'
  * @param node - 対象となるノード
  * @returns 先祖のインスタンスノードの配列（浅い階層から深い階層の順）
  */
-export function getAncestorInstances(node: SceneNode) {
+export async function getAncestorInstances(node: SceneNode) {
   const instanceArray: InstanceNode[] = []
 
   // idをセミコロンで区切って配列にしたもの
   const idArray = node.id.split(';')
 
-  idArray.forEach((id, i) => {
+  for (let i = 0; i < idArray.length; i++) {
     // 最後の要素は自分自身なのでスキップ
     if (i === idArray.length - 1) {
-      return
+      continue
     }
 
     // indexに応じてidを加工
@@ -34,10 +34,10 @@ export function getAncestorInstances(node: SceneNode) {
     }
 
     // 加工したidを元にインスタンスを検索
-    const instance = figma.getNodeById(targetId) as InstanceNode
+    const instance = (await figma.getNodeByIdAsync(targetId)) as InstanceNode
 
     instanceArray.push(instance)
-  })
+  }
 
   return instanceArray
 }
@@ -86,7 +86,7 @@ function getIndexArray(
  * @param node - インデックス構造を取得する対象のノード
  * @returns インデックス構造を表す数値配列（インスタンス内でない場合は空配列）
  */
-export function getIndexStructureInInstance(node: SceneNode) {
+export async function getIndexStructureInInstance(node: SceneNode) {
   // idをセミコロンで区切って配列にしたもの
   const idArray = node.id.split(';')
 
@@ -96,7 +96,9 @@ export function getIndexStructureInInstance(node: SceneNode) {
   }
 
   // idArrayの0番目（一番先祖）の要素を取得
-  const rootAncestorInstance = figma.getNodeById(idArray[0]) as InstanceNode
+  const rootAncestorInstance = (await figma.getNodeByIdAsync(
+    idArray[0],
+  )) as InstanceNode
 
   // インデックスを入れる配列を用意して、各階層でのインデックスを配列に入れる
   let indexArray: number[] = []

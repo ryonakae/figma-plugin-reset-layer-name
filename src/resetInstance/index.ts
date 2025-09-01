@@ -116,7 +116,7 @@ export default async function resetInstance(
     )
 
     // targetNodeの先祖インスタンスを取得
-    const ancestorInstances = getAncestorInstances(targetNode)
+    const ancestorInstances = await getAncestorInstances(targetNode)
     if (ancestorInstances.length > 0) {
       // 親インスタンスを取得
       const parentInstance = ancestorInstances[ancestorInstances.length - 1]

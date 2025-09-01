@@ -72,7 +72,7 @@ async function main() {
     // nodeがそれ以外の場合
     // 先祖インスタンスを取得
     // インスタンス内の要素とそれ以外の要素で処理を分ける必要があるため
-    const ancestorInstances = getAncestorInstances(node)
+    const ancestorInstances = await getAncestorInstances(node)
     console.log('ancestorInstances:', { ancestorInstances })
 
     // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
