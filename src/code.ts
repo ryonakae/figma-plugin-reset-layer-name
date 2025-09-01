@@ -1,121 +1,151 @@
-import {
-  getAncestorInstances,
-  getIndexStructureInInstance,
-  getNodeInComponentByIndexStructure
-} from '@/util'
+import resetInstance from '@/resetInstance'
+import { getAncestorInstances, handleError } from '@/util'
+
+/**
+ * Figmaのレイヤー名をデフォルト値にリセットするプラグイン
+ *
+ * 挙動：
+ * - コンポーネント/バリアントは名前を変更せず保持
+ * - インスタンスはメインコンポーネントの名前に変更
+ * - インスタンスの子要素はメインコンポーネントの同じ子要素の名前に変更
+ * - その他の要素は空の名前（リセット状態）に変更
+ *
+ * このファイルはプラグインのエントリーポイントとして機能し、
+ * ユーザーが選択した各レイヤーに対して適切な処理を実行します。
+ */
 
 // find系の高速化
 // figma.skipInvisibleInstanceChildren = true
 
-// エラーメッセージ集
-const errorMessage = {
-  common: 'Something went wrong.',
-  alreadyReset: 'Layer names have already been reset.'
-}
+/**
+ * プラグインのメイン処理を実行する関数
+ * - 選択されたノードを分析し、適切なリセット処理を実行
+ * - 結果に基づいてユーザーに通知を表示
+ */
+async function main() {
+  // 1つも選択されていない場合は処理中断
+  // 実行前に必ず選択状態をチェックして、ユーザーに通知する
+  if (!figma.currentPage.selection.length) {
+    figma.notify('Please select at least one layer')
+    figma.closePlugin()
+    return
+  }
 
-if (figma.currentPage.selection.length) {
+  // 通知を表示 (選択しているノード数に応じてメッセージを変更)
+  const processingNotification = figma.notify(
+    `Resetting layer ${
+      figma.currentPage.selection.length > 1 ? 'names' : 'name'
+    }...`,
+    {
+      timeout: Infinity,
+    },
+  )
+
+  // 1frame分待機
+  await new Promise(resolve => setTimeout(resolve, 16))
+
+  // 処理結果を追跡するためのカウンター
+  let successCount = 0
+  const errors: string[] = []
+
   // 選択している要素ごとに処理を実行
-  figma.currentPage.selection.forEach(async node => {
+  for (const node of figma.currentPage.selection) {
     console.log(node)
 
+    // nodeがTextNodeでautoRenameがtrueの場合は処理をスキップ
+    // autoRename=trueのテキストは既に自動的に名前が設定されているため、
+    // 手動でリセットする必要がない
+    if (node.type === 'TEXT' && node.autoRename) {
+      handleError('Name has already been reset', errors)
+      continue
+    }
+
     // nodeがコンポーネント or Variantsの場合
+    // コンポーネントとバリアントは名前を保持する必要があるため、
+    // 処理をスキップして警告を表示する
     if (node.type === 'COMPONENT' || node.type === 'COMPONENT_SET') {
       // 名前をデフォルトに戻されると困るので、処理中断
-      figma.notify('This element is component or variants.')
-      return
+      handleError('This element is component or variants', errors)
+      continue
     }
 
     // nodeがそれ以外の場合
-    else {
-      // 先祖インスタンスを取得
-      const ancestorInstances = getAncestorInstances(node)
-      console.log('ancestorInstances', ancestorInstances)
+    // 先祖インスタンスを取得
+    // インスタンス内の要素とそれ以外の要素で処理を分ける必要があるため
+    const ancestorInstances = getAncestorInstances(node)
+    console.log('ancestorInstances:', { ancestorInstances })
 
-      // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
-      if (ancestorInstances.length > 0) {
-        console.log('ancestorInstances exist')
-
-        // 先祖インスタンスのメインコンポーネントを取得する
-        const mainComponentOfRootAncestorInstance =
-          ancestorInstances[0].mainComponent
-        console.log(
-          'mainComponentOfRootAncestorInstance',
-          mainComponentOfRootAncestorInstance,
-          mainComponentOfRootAncestorInstance?.name,
-          mainComponentOfRootAncestorInstance?.remote
-        )
-
-        // メインコンポーネントが無い場合は処理中断
-        if (!mainComponentOfRootAncestorInstance) {
-          return figma.notify(errorMessage.common)
-        }
-
-        // nodeのインデックス構造を取得する
-        const indexStructure = getIndexStructureInInstance(node)
-        console.log('indexStructure', indexStructure)
-
-        // 取得したインデックス構造から、先祖インスタンスのメインコンポーネント内の、
-        // nodeと同じ要素を取得する
-        const sameNode = getNodeInComponentByIndexStructure(
-          mainComponentOfRootAncestorInstance,
-          indexStructure
-        )
-        console.log('sameNode', sameNode)
-
-        // 同じ要素が無い場合は処理中断
-        if (!sameNode) {
-          return figma.notify(errorMessage.common)
-        }
-
-        // nodeの名前がsameNodeの名前とすでに同じ場合
-        if (node.name === sameNode.name) {
-          return figma.notify(errorMessage.alreadyReset)
-        }
-        // 違う場合→リネーム
-        else {
-          node.name = sameNode.name
-        }
-      }
-
-      // 先祖インスタンスがない場合
-      else {
-        console.log('no ancestorInstances')
-
-        // nodeがインスタンスの場合
-        if (node.type === 'INSTANCE') {
-          // メインコンポーネントを取得
-          const mainComponent = node.mainComponent
-
-          // メインコンポーネントが無い場合は処理中断
-          if (!mainComponent) {
-            return figma.notify(errorMessage.common)
-          }
-
-          // メインコンポーネントの親がvariantsの場合→nodeをvariantsの名前にする
-          if (
-            mainComponent.parent &&
-            mainComponent.parent.type === 'COMPONENT_SET'
-          ) {
-            node.name = mainComponent.parent.name
-          }
-          // それ以外の場合→nodeをメインコンポーネントの名前にする
-          else {
-            node.name = mainComponent.name
-          }
-        }
-        // それ以外の場合
-        else {
-          // 名前を空にする（リセットされる）
-          node.name = ''
-        }
+    // 先祖インスタンスがある場合（nodeはインスタンスの子要素）
+    // インスタンス内の要素はコンポーネントの対応する要素から名前を取得するため、
+    // resetInstance関数を使用して適切に処理する
+    if (ancestorInstances.length > 0) {
+      // resetInstanceを実行 (parentInstanceはancestorInstancesの最後の要素)
+      const result = await resetInstance(
+        node,
+        ancestorInstances[ancestorInstances.length - 1],
+      )
+      if (result.success) {
+        successCount++
+      } else {
+        console.warn(result.error)
+        errors.push(result.error)
       }
     }
-  })
+    // 先祖インスタンスがない場合
+    else {
+      console.log('no ancestorInstances')
 
-  figma.notify('Reset selected layers name!')
-} else {
-  figma.notify('Please select at least one layer.')
+      // nodeがインスタンスの場合
+      // インスタンス自体はコンポーネントの名前を取得するため、
+      // 自分自身をparentInstanceとしてresetInstanceを実行
+      if (node.type === 'INSTANCE') {
+        // resetInstanceを実行 (parentInstanceはnode自身)
+        const result = await resetInstance(node, node)
+        if (result.success) {
+          successCount++
+        } else {
+          console.warn(result.error)
+          errors.push(result.error)
+        }
+      }
+      // それ以外の場合
+      // インスタンスでもコンポーネントでもない通常の要素は単に名前を空にする
+      else {
+        // 名前を空にする（リセットされる）
+        node.name = ''
+        successCount++
+      }
+    }
+  }
+
+  // 処理中の通知を今すぐ閉じる
+  processingNotification.cancel()
+
+  // 処理結果に基づいて通知を表示
+  // 成功数に応じて適切なメッセージを選択し、ユーザーに通知する
+  console.log('successCount:', { successCount })
+
+  // successCountが0の場合
+  if (successCount === 0) {
+    // errorsが1つだけの場合はそのエラーメッセージを表示
+    if (errors.length === 1) {
+      figma.notify(errors[0])
+    }
+    // errorsが複数ある場合は、汎用的なエラーメッセージを表示
+    else {
+      figma.notify('No layer names were reset')
+    }
+  }
+  // successCountが1以上の場合
+  else {
+    figma.notify(
+      `Reset ${successCount} layer ${successCount > 1 ? 'names' : 'name'}!`,
+    )
+  }
+
+  // プラグインを終了
+  figma.closePlugin()
 }
 
-// プラグインを終了
-figma.closePlugin()
+// メイン関数の実行
+main()
