@@ -47,50 +47,63 @@ export default function getOverrideValues(
 
     valuesMap[override.id] = { targetNode, overriddenFields: {} }
 
-    // TextNodeの場合は、charactersとstyledTextSegmentsを常に取得する
+    // TextNodeの場合は、charactersを常に取得する
     if (targetNode.type === 'TEXT') {
       const textNode = targetNode as TextNode
 
       // charactersを取得
       valuesMap[override.id].overriddenFields.characters = textNode.characters
-
-      // styledTextSegmentsを取得（すべてのフィールドを指定）
-      valuesMap[override.id].overriddenFields.styledTextSegments =
-        textNode.getStyledTextSegments([
-          'fontSize',
-          'fontName',
-          'fontWeight',
-          'textDecoration',
-          'textDecorationStyle',
-          'textDecorationOffset',
-          'textDecorationThickness',
-          'textDecorationColor',
-          'textDecorationSkipInk',
-          'textCase',
-          'lineHeight',
-          'letterSpacing',
-          'fills',
-          'textStyleId',
-          'fillStyleId',
-          'listOptions',
-          'listSpacing',
-          'indentation',
-          'paragraphIndent',
-          'paragraphSpacing',
-          'hyperlink',
-          'openTypeFeatures',
-          'boundVariables',
-        ])
     }
 
     override.overriddenFields.forEach(overridenField => {
       // charactersの場合（TextNodeの場合は既に取得済みなのでスキップ）
       if (overridenField === 'characters' && targetNode.type === 'TEXT') {
       }
+      // styledTextSegmentsの場合
+      else if (
+        overridenField === 'styledTextSegments' &&
+        targetNode.type === 'TEXT'
+      ) {
+        // styledTextSegmentsを取得（すべてのフィールドを指定）
+        valuesMap[override.id].overriddenFields.styledTextSegments =
+          targetNode.getStyledTextSegments([
+            'fontSize',
+            'fontName',
+            'fontWeight',
+            'textDecoration',
+            'textDecorationStyle',
+            'textDecorationOffset',
+            'textDecorationThickness',
+            'textDecorationColor',
+            'textDecorationSkipInk',
+            'textCase',
+            'lineHeight',
+            'letterSpacing',
+            'fills',
+            'textStyleId',
+            'fillStyleId',
+            'listOptions',
+            'listSpacing',
+            'indentation',
+            'paragraphIndent',
+            'paragraphSpacing',
+            'hyperlink',
+            'openTypeFeatures',
+            'boundVariables',
+          ])
+      }
       // stokeTopWeightの場合
       // Plugin APIのバグでstrokeTopWeightがstokeTopWeightになっているため
-      else if (overridenField === 'stokeTopWeight') {
-        const value = (targetNode as any).strokeTopWeight
+      else if (
+        overridenField === 'stokeTopWeight' &&
+        (targetNode.type === 'COMPONENT' ||
+          targetNode.type === 'COMPONENT_SET' ||
+          targetNode.type === 'FRAME' ||
+          targetNode.type === 'INSTANCE' ||
+          targetNode.type === 'RECTANGLE' ||
+          targetNode.type === 'SLIDE')
+      ) {
+        const value = targetNode.strokeTopWeight
         valuesMap[override.id].overriddenFields.strokeTopWeight = value
       }
       // それ以外のフィールドの場合、lodashのcloneDeepを使用して値を保存
