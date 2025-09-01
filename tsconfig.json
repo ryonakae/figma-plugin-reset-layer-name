@@ -1,24 +1,31 @@
 {
   "compilerOptions": {
+    /* Language and Environment */
     "target": "ES6",
+    "lib": ["ES6", "DOM"],
+
+    /* Modules */
     "module": "ESNext",
     "moduleResolution": "Node",
-    "lib": ["ES6", "DOM"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "@emotion/react",
-    "allowJs": false,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "strict": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "*": ["src/@types/*"]
     },
-    "types": ["@types/node", "@figma/plugin-typings"]
+    "types": ["@types/node", "@figma/plugin-typings"],
+    "resolveJsonModule": true,
+
+    /* Interop Constraints */
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Type Checking */
+    "strict": true,
+
+    /* Completeness */
+    "skipLibCheck": true
   },
-  "include": ["src", ".eslintrc.js", ".prettierrc.js"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
