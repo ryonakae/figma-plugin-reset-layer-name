@@ -2,12 +2,17 @@
 
 ![](./cover.png)
 
-Resets the names of selected layers to their default values.  
-This plugin supports **every type of element** you can select in Figma!  
-\-  
-選択したレイヤーの名前をデフォルト値にリセットします。  
-このプラグインは、Figmaで選択可能な**すべてのタイプの要素**をサポートしています！
+Resets the names of selected layers to their default values.
 
+Unlike most layer name reset plugins that only work with text elements, this plugin can reset the names of **all element types**.
+
+Additionally, when resetting the name of a child element within an instance, other plugins often simply reset the layer to its original name, leaving the name override from the original instance intact. However, this plugin is the **only one** that can properly reset name overrides, making it truly unique.  
+\-  
+選択したレイヤーの名前をデフォルト値にリセットします。
+
+よくあるレイヤー名リセットプラグインはテキスト要素にしか対応していませんが、このプラグインは**すべてのタイプの要素**の名前をリセットできます。
+
+また、インスタンス内の子要素の名前をリセットする際、他のプラグインは単純にレイヤーを元の名前にリセットするだけで、元のインスタンスからの名前オーバーライドはそのまま残ってしまいます。しかし、このプラグインは名前のオーバーライドを正しくリセットできる**唯一無二**のプラグインです。
 
 ## 🔥 How to Use / 使い方
 
@@ -80,13 +85,6 @@ When resetting an instance or its child elements, the plugin performs a sophisti
 The names of other elements (like Text, Rectangle, Frame, Group, etc.) will be reset to an empty string.  
 \-  
 その他の要素（テキスト、矩形、フレーム、グループなど）の名前は空の文字列にリセットされます。
-
-#### Special Cases / 特殊なケース
-- **Auto-renamed Text**: TextNodes with `autoRename=true` are skipped as they already have default names
-
-\-
-
-- **自動リネームされるテキスト**: `autoRename=true`のTextNodeは、既にデフォルト名を持っているためスキップされます
 
 ## 📮 Support
 
